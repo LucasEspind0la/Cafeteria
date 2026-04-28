@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>☕ Cafeteria - Faça seu Pedido</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="loja.css">
+</head>
+<body>
+<div class="loja">
+    <!-- Header -->
+    <header class="loja-header">
+        <div class="logo">☕ Nossa Cafeteria</div>
+        <div class="carrinho-btn" onclick="toggleCarrinho()">
+            🛒 <span id="cart-count">0</span>
+        </div>
+    </header>
+
+    <!-- Menu de Categorias -->
+    <nav class="menu-categorias">
+        <button class="cat-btn active" onclick="filtrarCategoria('')">Todos</button>
+        <button class="cat-btn" onclick="filtrarCategoria('Bebida')">☕ Bebidas</button>
+        <button class="cat-btn" onclick="filtrarCategoria('Lanche')">🥐 Lanches</button>
+        <button class="cat-btn" onclick="filtrarCategoria('Doce')">🍰 Doces</button>
+    </nav>
+
+    <!-- Produtos -->
+    <main class="loja-produtos" id="produtos-container">
+        <div class="loading">Carregando cardápio...</div>
+    </main>
+
+    <!-- Carrinho Lateral -->
+    <aside class="carrinho" id="carrinho">
+        <div class="carrinho-header">
+            <h3>🛒 Seu Pedido</h3>
+            <button class="fechar" onclick="toggleCarrinho()">✕</button>
+        </div>
+
+        <div class="carrinho-itens" id="carrinho-itens">
+            <p class="vazio">Carrinho vazio</p>
+        </div>
+
+        <div class="carrinho-total">
+            <div class="total-linha">
+                <span>Total:</span>
+                <span id="total-valor">R$ 0,00</span>
+            </div>
+            <button class="btn-finalizar" onclick="finalizarPedido()">
+                Finalizar Pedido
+            </button>
+        </div>
+    </aside>
+
+    <!-- Modal Finalizar -->
+    <div class="modal" id="modal-pedido">
+        <div class="modal-conteudo">
+            <h3>📋 Dados do Pedido</h3>
+            <input type="text" id="nome-cliente" placeholder="Seu nome" required>
+            <input type="tel" id="telefone-cliente" placeholder="Telefone (WhatsApp)" required>
+
+            <div class="resumo-pedido" id="resumo-pedido"></div>
+
+            <div class="modal-acoes">
+                <button class="btn-secondary" onclick="fecharModal()">Cancelar</button>
+                <button class="btn-primary" onclick="confirmarPedido()">Confirmar Pedido</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Overlay -->
+    <div class="overlay" id="overlay" onclick="toggleCarrinho()"></div>
+
+    <!-- Toast -->
+    <div id="toast" class="toast"></div>
+</div>
+
+<script src="loja.js"></script>
+</body>
+</html>
