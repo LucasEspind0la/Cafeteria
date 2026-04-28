@@ -63,8 +63,8 @@ public class PagamentoService {
         Pedido pedido = pedidoRepository.findById(pedidoId)
                 .orElseThrow(() -> new RuntimeException("Pedido não encontrado"));
 
-        // Aqui você integraria com Stripe se quiser
-        // Por enquanto, retorna simulação
+        // integraria com Stripe se quiser
+        //  retorna simulação
         Map<String, String> resposta = new HashMap<>();
         resposta.put("simulado", "true");
         resposta.put("pedidoId", pedidoId.toString());
