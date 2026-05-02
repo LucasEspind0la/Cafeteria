@@ -4,12 +4,10 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>☕ Cafeteria - Faça seu Pedido</title>
-    <!-- Seus CSS originais -->
     <link rel="stylesheet" href="style.css">
     <link rel="stylesheet" href="loja.css">
 
     <style>
-        /* Estilo para a barra de navegação superior */
         .nav-admin {
             display: flex;
             gap: 15px;
@@ -32,7 +30,6 @@
             background: rgba(255, 255, 255, 0.25);
         }
 
-        /* Separador visual */
         .separator {
             width: 1px;
             height: 20px;
@@ -42,25 +39,24 @@
 </head>
 <body>
 <div class="loja">
-    <!-- Header COM OS BOTÕES DE NAVEGAÇÃO -->
     <header class="loja-header">
         <div class="logo">☕ Cafeteria</div>
 
         <nav class="nav-admin">
-            <!-- Botões para as outras páginas -->
-            <a href="http://localhost:8080/Dashboard.html" class="btn-nav" target="_blank">📊 Dashboard</a>
-            <a href="http://localhost:8080/admin.html" class="btn-nav" target="_blank">☕ Gestão Produtos</a>
+            <!-- REMOVIDO target="_blank" de todos -->
+            <a href="http://localhost:8080/Dashboard.html" class="btn-nav">📊 Dashboard</a>
+            <a href="http://localhost:8080/admin.html" class="btn-nav">☕ Gestão Produtos</a>
+            <a href="http://localhost:8080/cozinha.html" class="btn-nav">👨‍🍳 Cozinha</a>
+            <a href="http://localhost:8080/notificacoes.html" class="btn-nav">🔔 Notificações</a>
 
             <div class="separator"></div>
 
-            <!-- Carrinho Existente -->
             <div class="carrinho-btn" onclick="toggleCarrinho()">
                 🛒 <span id="cart-count">0</span>
             </div>
         </nav>
     </header>
 
-    <!-- Menu de Categorias -->
     <nav class="menu-categorias">
         <button class="cat-btn active" onclick="filtrarCategoria('')">Todos</button>
         <button class="cat-btn" onclick="filtrarCategoria('Bebida')">☕ Bebidas</button>
@@ -68,12 +64,10 @@
         <button class="cat-btn" onclick="filtrarCategoria('Doce')">🍰 Doces</button>
     </nav>
 
-    <!-- Produtos -->
     <main class="loja-produtos" id="produtos-container">
         <div class="loading">Carregando cardápio...</div>
     </main>
 
-    <!-- Carrinho Lateral -->
     <aside class="carrinho" id="carrinho">
         <div class="carrinho-header">
             <h3>🛒 Seu Pedido</h3>
@@ -86,7 +80,6 @@
         </div>
     </aside>
 
-    <!-- Modal Finalizar -->
     <div class="modal" id="modal-pedido">
         <div class="modal-conteudo">
             <h3>📋 Dados do Pedido</h3>
