@@ -4,17 +4,60 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>☕ Cafeteria - Faça seu Pedido</title>
+    <!-- Seus CSS originais -->
     <link rel="stylesheet" href="style.css">
     <link rel="stylesheet" href="loja.css">
+
+    <style>
+        /* Estilo para a barra de navegação superior */
+        .nav-admin {
+            display: flex;
+            gap: 15px;
+            align-items: center;
+        }
+
+        .btn-nav {
+            color: rgba(255, 255, 255, 0.9);
+            text-decoration: none;
+            font-size: 0.9rem;
+            font-weight: 600;
+            padding: 8px 16px;
+            border-radius: 8px;
+            transition: all 0.2s ease;
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .btn-nav:hover {
+            background: rgba(255, 255, 255, 0.25);
+        }
+
+        /* Separador visual */
+        .separator {
+            width: 1px;
+            height: 20px;
+            background: rgba(255,255,255,0.3);
+        }
+    </style>
 </head>
 <body>
 <div class="loja">
-    <!-- Header -->
+    <!-- Header COM OS BOTÕES DE NAVEGAÇÃO -->
     <header class="loja-header">
-        <div class="logo">☕ Nossa Cafeteria</div>
-        <div class="carrinho-btn" onclick="toggleCarrinho()">
-            🛒 <span id="cart-count">0</span>
-        </div>
+        <div class="logo">☕ Cafeteria</div>
+
+        <nav class="nav-admin">
+            <!-- Botões para as outras páginas -->
+            <a href="http://localhost:8080/Dashboard.html" class="btn-nav" target="_blank">📊 Dashboard</a>
+            <a href="http://localhost:8080/admin.html" class="btn-nav" target="_blank">☕ Gestão Produtos</a>
+
+            <div class="separator"></div>
+
+            <!-- Carrinho Existente -->
+            <div class="carrinho-btn" onclick="toggleCarrinho()">
+                🛒 <span id="cart-count">0</span>
+            </div>
+        </nav>
     </header>
 
     <!-- Menu de Categorias -->
@@ -36,19 +79,10 @@
             <h3>🛒 Seu Pedido</h3>
             <button class="fechar" onclick="toggleCarrinho()">✕</button>
         </div>
-
-        <div class="carrinho-itens" id="carrinho-itens">
-            <p class="vazio">Carrinho vazio</p>
-        </div>
-
+        <div class="carrinho-itens" id="carrinho-itens"><p class="vazio">Carrinho vazio</p></div>
         <div class="carrinho-total">
-            <div class="total-linha">
-                <span>Total:</span>
-                <span id="total-valor">R$ 0,00</span>
-            </div>
-            <button class="btn-finalizar" onclick="finalizarPedido()">
-                Finalizar Pedido
-            </button>
+            <div class="total-linha"><span>Total:</span><span id="total-valor">R$ 0,00</span></div>
+            <button class="btn-finalizar" onclick="finalizarPedido()">Finalizar Pedido</button>
         </div>
     </aside>
 
@@ -57,21 +91,16 @@
         <div class="modal-conteudo">
             <h3>📋 Dados do Pedido</h3>
             <input type="text" id="nome-cliente" placeholder="Seu nome" required>
-            <input type="tel" id="telefone-cliente" placeholder="Telefone (WhatsApp)" required>
-
+            <input type="tel" id="telefone-cliente" placeholder="Telefone" required>
             <div class="resumo-pedido" id="resumo-pedido"></div>
-
             <div class="modal-acoes">
                 <button class="btn-secondary" onclick="fecharModal()">Cancelar</button>
-                <button class="btn-primary" onclick="confirmarPedido()">Confirmar Pedido</button>
+                <button class="btn-primary" onclick="confirmarPedido()">Confirmar</button>
             </div>
         </div>
     </div>
 
-    <!-- Overlay -->
     <div class="overlay" id="overlay" onclick="toggleCarrinho()"></div>
-
-    <!-- Toast -->
     <div id="toast" class="toast"></div>
 </div>
 
