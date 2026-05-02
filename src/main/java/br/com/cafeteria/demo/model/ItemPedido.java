@@ -18,17 +18,14 @@ public class ItemPedido {
     private Long id;
 
     @ManyToOne
-    @JoinColumn(name = "produto_id")
+    @JoinColumn(name = "produto_id", nullable = false)
     private Produto produto;
 
+    @Column(nullable = false)
     private Integer quantidade;
 
+    @Column(nullable = false, precision = 10, scale = 2)
     private BigDecimal precoUnitario;
 
-    private BigDecimal subtotal;
-
-    @PrePersist
-    public void prePersist() {
-        this.subtotal = this.precoUnitario.multiply(BigDecimal.valueOf(this.quantidade));
-    }
+    // Calculado automaticamente se quiser, ou deixa o service calcular
 }

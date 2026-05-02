@@ -31,3 +31,25 @@ build/
 
 ### VS Code ###
 .vscode/
+
+### Logs ###
+*.log
+logs/
+
+### Banco de dados local (H2) ###
+*.db
+*.mv.db
+*.trace.db
+
+### Uploads/Imagens locais (se tiver pasta de uploads) ###
+uploads/
+src/main/resources/static/imagens/produtos/
+
+### Ambiente ###
+.env
+application-local.properties
+application-dev.properties
+
+### Sistema operacional ###
+.DS_Store
+Thumbs.db

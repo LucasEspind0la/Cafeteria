@@ -57,4 +57,8 @@ public class ProdutoService {
     public List<Produto> estoqueBaixo(Integer limite) {
         return produtoRepository.findByEstoqueLessThan(limite);
     }
+
+    public Produto salvar(Produto produto) {
+        return produto;
+    }
 }

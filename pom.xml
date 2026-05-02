@@ -24,6 +24,13 @@
 
 	<dependencies>
 
+		<!-- Segurança (O "Guarda")-->
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-security</artifactId>
+		</dependency>
+
+
 		<!-- Stripe -->
 		<dependency>
 			<groupId>com.stripe</groupId>
