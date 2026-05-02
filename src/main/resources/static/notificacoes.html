@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <title>🔔 Notificações</title>
+    <link rel="stylesheet" href="style.css">
+    <style>
+        .nav-header {
+            background: #6f4e37;
+            padding: 15px;
+            display: flex;
+            gap: 15px;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+        .nav-header a {
+            color: white;
+            text-decoration: none;
+            padding: 8px 16px;
+            border-radius: 6px;
+            background: rgba(255,255,255,0.15);
+        }
+        .nav-header a:hover {
+            background: rgba(255,255,255,0.3);
+        }
+        .nav-header .ativo {
+            background: rgba(255,255,255,0.4);
+            font-weight: bold;
+        }
+        .user-info {
+            margin-left: auto;
+            color: white;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .btn-logout {
+            background: #e74c3c;
+            border: none;
+            color: white;
+            padding: 6px 12px;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+        .notificacoes {
+            padding: 20px;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        .notif-card {
+            background: white;
+            padding: 15px;
+            margin-bottom: 10px;
+            border-radius: 8px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            border-left: 4px solid #3498db;
+        }
+        .notif-card.lida {
+            opacity: 0.6;
+            border-left-color: #95a5a6;
+        }
+        .notif-titulo {
+            font-weight: bold;
+            color: #2c3e50;
+            margin-bottom: 5px;
+        }
+        .notif-msg {
+            color: #7f8c8d;
+        }
+        .notif-hora {
+            font-size: 0.8rem;
+            color: #95a5a6;
+            margin-top: 5px;
+        }
+    </style>
+</head>
+<body>
+
+<div class="nav-header">
+    <a href="index.html">🏠 Loja</a>
+    <a href="Dashboard.html">📊 Dashboard</a>
+    <a href="admin.html">☕ Gestão Produtos</a>
+    <a href="cozinha.html">👨‍🍳 Cozinha</a>
+    <a href="notificacoes.html" class="ativo">🔔 Notificações</a>
+
+    <div class="user-info">
+        <span>👤 <strong id="nome-usuario">...</strong></span>
+        <form action="/logout" method="post" style="display:inline;">
+            <button type="submit" class="btn-logout">Sair</button>
+        </form>
+    </div>
+</div>
+
+<div class="notificacoes">
+    <h1>🔔 Notificações</h1>
+    <div id="lista-notificacoes">
+        <div class="notif-card">
+            <div class="notif-titulo">📦 Novo Pedido #123</div>
+            <div class="notif-msg">Pedido recebido: 2x Café Expresso, 1x Croissant</div>
+            <div class="notif-hora">Há 5 minutos</div>
+        </div>
+        <div class="notif-card lida">
+            <div class="notif-titulo">✅ Pedido #120 Pronto</div>
+            <div class="notif-msg">O pedido está pronto para entrega</div>
+            <div class="notif-hora">Há 30 minutos</div>
+        </div>
+    </div>
+</div>
+
+<script>
+    fetch('/api/auth/me').then(r => r.json()).then(data => {
+        if (!data.authenticated) {
+            window.location.href = 'login.html';
+            return;
+        }
+        document.getElementById('nome-usuario').textContent = data.username;
+    });
+</script>
+
+</body>
+</html>

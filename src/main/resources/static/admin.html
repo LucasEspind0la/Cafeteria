@@ -2,95 +2,553 @@
 <html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>☕ Cafeteria - Gestão de Produtos</title>
+    <title>☕ Gestão de Produtos</title>
     <link rel="stylesheet" href="style.css">
+    <style>
+        /* ===== NAVEGAÇÃO ===== */
+        .nav-header {
+            background: #6f4e37;
+            padding: 15px;
+            display: flex;
+            gap: 15px;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+        .nav-header a {
+            color: white;
+            text-decoration: none;
+            padding: 8px 16px;
+            border-radius: 6px;
+            background: rgba(255,255,255,0.15);
+        }
+        .nav-header a:hover {
+            background: rgba(255,255,255,0.3);
+        }
+        .nav-header .ativo {
+            background: rgba(255,255,255,0.4);
+            font-weight: bold;
+        }
+        .user-info {
+            margin-left: auto;
+            color: white;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .btn-logout {
+            background: #e74c3c;
+            border: none;
+            color: white;
+            padding: 6px 12px;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+        /* ===== CONTEÚDO ===== */
+        .container {
+            padding: 20px;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        h1 {
+            color: #6f4e37;
+            margin-bottom: 20px;
+        }
+        .acoes-topo {
+            margin-bottom: 20px;
+        }
+        .btn-novo {
+            background: #27ae60;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 1rem;
+        }
+        .btn-novo:hover {
+            background: #219a52;
+        }
+
+        /* ===== GRID DE PRODUTOS ===== */
+        .produtos-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 20px;
+        }
+
+        /* ===== CARD COM IMAGEM ===== */
+        .produto-card {
+            background: white;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            transition: transform 0.2s;
+        }
+        .produto-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+        }
+
+        /* Área da imagem */
+        .produto-img-area {
+            width: 100%;
+            height: 180px;
+            background: linear-gradient(135deg, #f5f0eb 0%, #e8ddd0 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+            position: relative;
+        }
+
+        /* Imagem real */
+        .produto-img-area img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: transform 0.3s;
+        }
+        .produto-card:hover .produto-img-area img {
+            transform: scale(1.05);
+        }
+
+        /* Fallback quando não tem imagem */
+        .img-fallback {
+            font-size: 5rem;
+            opacity: 0.6;
+        }
+
+        /* Dados do produto */
+        .produto-dados {
+            padding: 15px;
+        }
+        .produto-dados h3 {
+            color: #6f4e37;
+            margin-bottom: 5px;
+            font-size: 1.1rem;
+        }
+        .tipo {
+            display: inline-block;
+            background: #f0f0f0;
+            padding: 4px 10px;
+            border-radius: 12px;
+            font-size: 0.8rem;
+            color: #666;
+            margin-bottom: 10px;
+        }
+        .preco {
+            font-size: 1.5rem;
+            color: #27ae60;
+            font-weight: bold;
+            margin: 8px 0;
+        }
+        .estoque {
+            color: #7f8c8d;
+            font-size: 0.9rem;
+            margin-bottom: 8px;
+        }
+        .produto-dados p {
+            color: #666;
+            font-size: 0.9rem;
+            margin-bottom: 12px;
+            line-height: 1.4;
+        }
+
+        /* Botões de ação */
+        .acoes {
+            display: flex;
+            gap: 10px;
+            margin-top: 10px;
+        }
+        .btn-editar {
+            flex: 1;
+            background: #f39c12;
+            color: white;
+            border: none;
+            padding: 10px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 600;
+        }
+        .btn-editar:hover {
+            background: #e67e22;
+        }
+        .btn-excluir {
+            flex: 1;
+            background: #e74c3c;
+            color: white;
+            border: none;
+            padding: 10px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 600;
+        }
+        .btn-excluir:hover {
+            background: #c0392b;
+        }
+
+        /* ===== MODAL ===== */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+        .modal.ativo {
+            display: flex;
+        }
+        .modal-conteudo {
+            background: white;
+            padding: 30px;
+            border-radius: 12px;
+            width: 90%;
+            max-width: 500px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.3);
+        }
+        .modal-conteudo h2 {
+            color: #6f4e37;
+            margin-bottom: 20px;
+        }
+        .form-group {
+            margin-bottom: 15px;
+        }
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            color: #555;
+            font-weight: 500;
+        }
+        .form-group input {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            font-size: 1rem;
+        }
+        .form-group input:focus {
+            outline: none;
+            border-color: #6f4e37;
+        }
+        .modal-botoes {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
+        }
+        .btn-salvar {
+            flex: 1;
+            background: #27ae60;
+            color: white;
+            border: none;
+            padding: 12px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 1rem;
+        }
+        .btn-salvar:hover {
+            background: #219a52;
+        }
+        .btn-cancelar {
+            flex: 1;
+            background: #95a5a6;
+            color: white;
+            border: none;
+            padding: 12px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 1rem;
+        }
+        .btn-cancelar:hover {
+            background: #7f8c8d;
+        }
+
+        /* Adicionar campo imagem no modal */
+        .form-group small {
+            color: #999;
+            font-size: 0.8rem;
+        }
+
+        .loading, .erro {
+            text-align: center;
+            padding: 40px;
+            color: #7f8c8d;
+        }
+        .erro {
+            color: #e74c3c;
+        }
+    </style>
 </head>
 <body>
-<div class="app">
-    <!-- Header -->
-    <header class="header">
-        <div class="logo">☕ Cafeteria</div>
-        <nav class="nav">
-            <button class="nav-btn active" onclick="showSection('produtos')">Produtos</button>
-            <button class="nav-btn" onclick="showSection('cadastro')">Novo Produto</button>
-        </nav>
-    </header>
 
-    <!-- Seção: Lista de Produtos -->
-    <section id="sec-produtos" class="section active">
-        <div class="section-header">
-            <h2>📦 Catálogo de Produtos</h2>
-            <div class="filters">
-                <input type="text" id="search" placeholder="🔍 Buscar produto..." oninput="filtrar()">
-                <select id="filter-tipo" onchange="filtrar()">
-                    <option value="">Todos</option>
-                    <option value="Bebida">Bebidas</option>
-                    <option value="Lanche">Lanches</option>
-                    <option value="Doce">Doces</option>
-                </select>
-            </div>
-        </div>
+<!-- NAVEGAÇÃO -->
+<div class="nav-header">
+    <a href="index.html">🏠 Loja</a>
+    <a href="Dashboard.html">📊 Dashboard</a>
+    <a href="admin.html" class="ativo">☕ Gestão Produtos</a>
+    <a href="cozinha.html">👨‍🍳 Cozinha</a>
+    <a href="notificacoes.html">🔔 Notificações</a>
 
-        <div id="loading" class="loading">Carregando...</div>
-        <div id="lista-produtos" class="grid"></div>
-    </section>
-
-    <!-- Seção: Cadastro -->
-    <section id="sec-cadastro" class="section">
-        <div class="form-container">
-            <h2>➕ Cadastrar Produto</h2>
-            <form id="form-produto" onsubmit="salvar(event)">
-                <div class="form-row">
-                    <div class="form-group">
-                        <label>Nome *</label>
-                        <input type="text" id="nome" required placeholder="Ex: Café Expresso">
-                    </div>
-                    <div class="form-group">
-                        <label>Tipo *</label>
-                        <select id="tipo" required>
-                            <option value="">Selecione</option>
-                            <option value="Bebida">Bebida</option>
-                            <option value="Lanche">Lanche</option>
-                            <option value="Doce">Doce</option>
-                        </select>
-                    </div>
-                </div>
-
-                <div class="form-row">
-                    <div class="form-group">
-                        <label>Categoria *</label>
-                        <input type="text" id="categoria" required placeholder="Ex: Quente, Gelado">
-                    </div>
-                    <div class="form-group">
-                        <label>Preço (R$) *</label>
-                        <input type="number" id="preco" step="0.01" min="0" required placeholder="5.00">
-                    </div>
-                </div>
-
-                <div class="form-row">
-                    <div class="form-group">
-                        <label>Estoque *</label>
-                        <input type="number" id="estoque" min="0" required placeholder="50">
-                    </div>
-                    <div class="form-group">
-                        <label>Descrição</label>
-                        <input type="text" id="descricao" placeholder="Opcional">
-                    </div>
-                </div>
-
-                <div class="form-actions">
-                    <button type="button" class="btn-secondary" onclick="showSection('produtos')">Cancelar</button>
-                    <button type="submit" class="btn-primary">💾 Salvar Produto</button>
-                </div>
-            </form>
-        </div>
-    </section>
-
-    <!-- Toast Notification -->
-    <div id="toast" class="toast"></div>
+    <div class="user-info">
+        <span>👤 <strong id="nome-usuario">Admin</strong></span>
+        <form action="/logout" method="post" style="display:inline;">
+            <button type="submit" class="btn-logout">Sair</button>
+        </form>
+    </div>
 </div>
 
-<script src="admin.js"></script>
+<!-- CONTEÚDO -->
+<div class="container">
+    <h1>☕ Gestão de Produtos</h1>
+
+    <div class="acoes-topo">
+        <button class="btn-novo" onclick="abrirModal()">➕ Novo Produto</button>
+    </div>
+
+    <div id="produtos-container">
+        <div class="loading">Carregando produtos...</div>
+    </div>
+</div>
+
+<!-- MODAL -->
+<div class="modal" id="modal-produto">
+    <div class="modal-conteudo">
+        <h2 id="modal-titulo">Novo Produto</h2>
+        <input type="hidden" id="produto-id">
+
+        <div class="form-group">
+            <label>Nome</label>
+            <input type="text" id="produto-nome" placeholder="Ex: Café Expresso">
+        </div>
+
+        <div class="form-group">
+            <label>Tipo</label>
+            <input type="text" id="produto-tipo" placeholder="Ex: Quente">
+        </div>
+
+        <div class="form-group">
+            <label>Categoria</label>
+            <input type="text" id="produto-categoria" placeholder="Ex: Bebida">
+        </div>
+
+        <div class="form-group">
+            <label>Preço (R$)</label>
+            <input type="number" id="produto-preco" step="0.01" placeholder="5.00">
+        </div>
+
+        <div class="form-group">
+            <label>Estoque</label>
+            <input type="number" id="produto-estoque" placeholder="50">
+        </div>
+
+        <!-- NOVO: Campo para URL da imagem -->
+        <div class="form-group">
+            <label>URL da Imagem</label>
+            <input type="text" id="produto-imagem" placeholder="https://exemplo.com/imagem.jpg">
+            <small>Cole aqui o link da imagem do produto (opcional)</small>
+        </div>
+
+        <div class="form-group">
+            <label>Descrição</label>
+            <input type="text" id="produto-descricao" placeholder="Descrição do produto">
+        </div>
+
+        <div class="modal-botoes">
+            <button class="btn-cancelar" onclick="fecharModal()">Cancelar</button>
+            <button class="btn-salvar" onclick="salvarProduto()">Salvar</button>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Ícones por categoria (fallback)
+    const iconesCategoria = {
+        'Bebida': '☕',
+        'Lanche': '🥐',
+        'Doce': '🍰',
+        'Salgado': '🥪',
+        'default': '🍽️'
+    };
+
+    let produtos = [];
+    let editandoId = null;
+
+    function getIcone(produto) {
+        return iconesCategoria[produto.categoria] ||
+            iconesCategoria[produto.tipo] ||
+            iconesCategoria['default'];
+    }
+
+    async function carregarProdutos() {
+        const container = document.getElementById('produtos-container');
+
+        try {
+            const response = await fetch('/api/produtos');
+
+            if (!response.ok) {
+                throw new Error('Erro ' + response.status);
+            }
+
+            produtos = await response.json();
+
+            if (produtos.length === 0) {
+                container.innerHTML = '<div class="erro">Nenhum produto cadastrado</div>';
+                return;
+            }
+
+            container.innerHTML = '<div class="produtos-grid">' +
+                produtos.map(p => {
+                    // CORREÇÃO: p.imagem (não p.imagen)
+                    let imgHTML = p.imagem
+                        ? `<img src="${p.imagem}" alt="${p.nome}" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">`
+                        : '';
+                    let fallbackHTML = `<div class="img-fallback">${getIcone(p)}</div>`;
+
+                    return `
+        <div class="produto-card">
+            <div class="produto-img-area">
+                ${imgHTML}
+                ${fallbackHTML}
+            </div>
+            <div class="produto-dados">
+                <h3>${p.nome}</h3>
+                <span class="tipo">${p.tipo} • ${p.categoria}</span>
+                <div class="preco">R$ ${Number(p.preco).toFixed(2)}</div>
+                <div class="estoque">📦 ${p.estoque} unidades</div>
+                <p>${p.descricao || 'Sem descrição'}</p>
+                <div class="acoes">
+                    <button class="btn-editar" onclick="editarProduto(${p.id})">✏️ Editar</button>
+                    <button class="btn-excluir" onclick="excluirProduto(${p.id})">🗑️ Excluir</button>
+                </div>
+            </div>
+        </div>
+    `}).join('') +
+                '</div>';
+
+        } catch (err) {
+            console.error('Erro ao carregar:', err);
+            container.innerHTML = '<div class="erro">Erro ao carregar produtos 😢<br><small>' + err.message + '</small></div>';
+        }
+    }
+
+    function abrirModal(id = null) {
+        editandoId = id;
+        document.getElementById('modal-titulo').textContent = id ? 'Editar Produto' : 'Novo Produto';
+
+        if (id) {
+            const produto = produtos.find(p => p.id === id);
+            document.getElementById('produto-id').value = produto.id;
+            document.getElementById('produto-nome').value = produto.nome;
+            document.getElementById('produto-tipo').value = produto.tipo;
+            document.getElementById('produto-categoria').value = produto.categoria;
+            document.getElementById('produto-preco').value = produto.preco;
+            // CORREÇÃO: getElementById (não ga etElementById)
+            document.getElementById('produto-estoque').value = produto.estoque;
+            document.getElementById('produto-imagem').value = produto.imagem || '';
+            document.getElementById('produto-descricao').value = produto.descricao || '';
+        } else {
+            limparFormulario();
+        }
+
+        document.getElementById('modal-produto').classList.add('ativo');
+    }
+
+    function fecharModal() {
+        document.getElementById('modal-produto').classList.remove('ativo');
+        limparFormulario();
+        editandoId = null;
+    }
+
+    function limparFormulario() {
+        document.getElementById('produto-id').value = '';
+        document.getElementById('produto-nome').value = '';
+        document.getElementById('produto-tipo').value = '';
+        document.getElementById('produto-categoria').value = '';
+        document.getElementById('produto-preco').value = '';
+        document.getElementById('produto-estoque').value = '';
+        document.getElementById('produto-imagem').value = '';
+        document.getElementById('produto-descricao').value = '';
+    }
+
+    async function salvarProduto() {
+        const produto = {
+            nome: document.getElementById('produto-nome').value,
+            tipo: document.getElementById('produto-tipo').value,
+            categoria: document.getElementById('produto-categoria').value,
+            preco: parseFloat(document.getElementById('produto-preco').value),
+            estoque: parseInt(document.getElementById('produto-estoque').value),
+            imagem: document.getElementById('produto-imagem').value || null,
+            descricao: document.getElementById('produto-descricao').value
+        };
+
+        try {
+            const url = editandoId ? `/api/produtos/${editandoId}` : '/api/produtos';
+            const method = editandoId ? 'PUT' : 'POST';
+
+            const response = await fetch(url, {
+                method: method,
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(produto)
+            });
+
+            if (response.ok) {
+                fecharModal();
+                carregarProdutos();
+                alert(editandoId ? 'Produto atualizado!' : 'Produto criado!');
+            } else {
+                alert('Erro ao salvar produto');
+            }
+        } catch (err) {
+            alert('Erro de conexão');
+        }
+    }
+
+    function editarProduto(id) {
+        abrirModal(id);
+    }
+
+    async function excluirProduto(id) {
+        if (!confirm('Tem certeza que deseja excluir este produto?')) return;
+
+        try {
+            const response = await fetch(`/api/produtos/${id}`, {
+                method: 'DELETE'
+            });
+
+            if (response.ok) {
+                carregarProdutos();
+                alert('Produto excluído!');
+            } else {
+                alert('Erro ao excluir produto');
+            }
+        } catch (err) {
+            alert('Erro de conexão');
+        }
+    }
+
+    // Verifica login
+    fetch('/api/auth/me')
+        .then(r => r.json())
+        .then(data => {
+            if (!data.authenticated || !data.authorities.some(a => a.authority === 'ROLE_ADMIN')) {
+                alert('Acesso negado!');
+                window.location.href = 'index.html';
+                return;
+            }
+            document.getElementById('nome-usuario').textContent = data.username;
+            carregarProdutos();
+        })
+        .catch(() => {
+            window.location.href = 'login.html';
+        });
+</script>
+
 </body>
 </html>

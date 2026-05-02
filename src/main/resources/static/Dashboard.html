@@ -1,0 +1,442 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <title>📊 Dashboard - Cafeteria</title>
+    <link rel="stylesheet" href="style.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        .nav-header {
+            background: #6f4e37;
+            padding: 12px 18px;
+            display: flex;
+            gap: 12px;
+            align-items: center;
+            flex-wrap: wrap;
+            border-radius: 10px;
+            margin-bottom: 18px;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+        }
+        .nav-header a {
+            color: rgba(255,255,255,0.9);
+            text-decoration: none;
+            padding: 6px 14px;
+            border-radius: 6px;
+            background: rgba(255,255,255,0.1);
+            border: 1px solid rgba(255,255,255,0.2);
+            font-size: 0.85rem;
+            font-weight: 600;
+            transition: all 0.2s ease;
+        }
+        .nav-header a:hover {
+            background: rgba(255,255,255,0.25);
+        }
+        .nav-header .ativo {
+            background: rgba(255,255,255,0.35);
+            font-weight: bold;
+        }
+        .user-info {
+            margin-left: auto;
+            color: rgba(255,255,255,0.9);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 0.8rem;
+        }
+        .user-info strong {
+            color: #fff;
+        }
+        .btn-logout {
+            background: rgba(231, 76, 60, 0.8);
+            border: none;
+            color: white;
+            padding: 5px 10px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 0.75rem;
+        }
+        .btn-logout:hover {
+            background: rgba(231, 76, 60, 1);
+        }
+
+        .container {
+            padding: 15px;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        h1 {
+            color: #6f4e37;
+            margin-bottom: 15px;
+            font-size: 1.5rem;
+        }
+        h2 {
+            color: #6f4e37;
+            margin: 20px 0 10px 0;
+            font-size: 1.1rem;
+        }
+
+        /* Cards compactos */
+        .cards {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+            gap: 12px;
+            margin: 15px 0 20px 0;
+        }
+        .card {
+            background: white;
+            padding: 15px 12px;
+            border-radius: 10px;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.06);
+            transition: transform 0.2s;
+            text-align: center;
+        }
+        .card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+        .card h3 {
+            color: #7f8c8d;
+            font-size: 0.7rem;
+            margin-bottom: 6px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        .card .valor {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: #6f4e37;
+        }
+        .card .icone {
+            font-size: 1.5rem;
+            margin-bottom: 5px;
+        }
+
+        /* Gráficos compactos */
+        .graficos-section {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 15px;
+            margin: 15px 0;
+        }
+        .grafico-card {
+            background: white;
+            padding: 15px;
+            border-radius: 10px;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.06);
+        }
+        .grafico-card h3 {
+            color: #6f4e37;
+            margin-bottom: 10px;
+            font-size: 0.9rem;
+            text-align: center;
+        }
+        .grafico-container {
+            position: relative;
+            height: 200px;
+        }
+
+        /* Tabela compacta */
+        table {
+            width: 100%;
+            background: white;
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.06);
+            border-collapse: collapse;
+            margin-top: 10px;
+            font-size: 0.85rem;
+        }
+        th {
+            background: #6f4e37;
+            color: white;
+            padding: 10px;
+            text-align: left;
+            font-weight: 600;
+            font-size: 0.8rem;
+        }
+        td {
+            padding: 10px;
+            border-bottom: 1px solid #f0f0f0;
+        }
+        tr:hover {
+            background: #faf8f5;
+        }
+        .status-PAGO {
+            color: #27ae60;
+            font-weight: bold;
+        }
+        .status-PENDENTE {
+            color: #f39c12;
+            font-weight: bold;
+        }
+        .status-PRONTO {
+            color: #3498db;
+            font-weight: bold;
+        }
+        .btn-pagar {
+            background: #27ae60;
+            color: white;
+            border: none;
+            padding: 5px 12px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 0.8rem;
+        }
+        .btn-pagar:hover {
+            background: #219a52;
+        }
+    </style>
+</head>
+<body>
+
+<div class="nav-header">
+    <a href="index.html">🏠 Loja</a>
+    <a href="Dashboard.html" class="ativo">📊 Dashboard</a>
+    <a href="admin.html">☕ Gestão</a>
+    <a href="cozinha.html">👨‍🍳 Cozinha</a>
+    <a href="notificacoes.html">🔔 Notificações</a>
+
+    <div class="user-info">
+        <span>👤 <strong id="nome-usuario">Admin</strong></span>
+        <form action="/logout" method="post" style="display:inline;">
+            <button type="submit" class="btn-logout">Sair</button>
+        </form>
+    </div>
+</div>
+
+<div class="container">
+    <h1>📊 Dashboard</h1>
+
+    <div class="cards">
+        <div class="card">
+            <div class="icone">💰</div>
+            <h3>Vendas Hoje</h3>
+            <div class="valor" id="vendas-hoje">R$ 0,00</div>
+        </div>
+        <div class="card">
+            <div class="icone">📦</div>
+            <h3>Pedidos</h3>
+            <div class="valor" id="pedidos-hoje">0</div>
+        </div>
+        <div class="card">
+            <div class="icone">📦</div>
+            <h3>Estoque</h3>
+            <div class="valor" id="produtos-estoque">0</div>
+        </div>
+        <div class="card">
+            <div class="icone">👥</div>
+            <h3>Clientes</h3>
+            <div class="valor" id="clientes-hoje">0</div>
+        </div>
+    </div>
+
+    <h2>📈 Análise</h2>
+    <div class="graficos-section">
+        <div class="grafico-card">
+            <h3>Vendas por Hora</h3>
+            <div class="grafico-container">
+                <canvas id="grafico-vendas-hora"></canvas>
+            </div>
+        </div>
+        <div class="grafico-card">
+            <h3>Top Produtos</h3>
+            <div class="grafico-container">
+                <canvas id="grafico-produtos"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <h2>📋 Pedidos de Hoje</h2>
+    <table>
+        <thead>
+        <tr>
+            <th>#</th>
+            <th>Hora</th>
+            <th>Cliente</th>
+            <th>Itens</th>
+            <th>Total</th>
+            <th>Status</th>
+            <th>Ação</th>
+        </tr>
+        </thead>
+        <tbody id="tabela-pedidos"></tbody>
+    </table>
+</div>
+
+<script>
+    let graficoVendasHora = null;
+    let graficoProdutos = null;
+
+    fetch('/api/auth/me')
+        .then(r => r.json())
+        .then(data => {
+            if (!data.authenticated || !data.authorities.some(a => a.authority === 'ROLE_ADMIN')) {
+                window.location.href = 'index.html';
+                return;
+            }
+            document.getElementById('nome-usuario').textContent = data.username;
+        });
+
+    async function carregarDashboard() {
+        try {
+            const [pedidos, produtos] = await Promise.all([
+                fetch('/api/pedidos/hoje').then(r => r.json()),
+                fetch('/api/produtos').then(r => r.json())
+            ]);
+
+            const totalVendas = pedidos
+                .filter(p => p.status === 'PAGO')
+                .reduce((s, p) => s + (p.total || 0), 0);
+
+            const totalPedidos = pedidos.length;
+            const totalEstoque = produtos.reduce((s, p) => s + p.estoque, 0);
+            const clientes = new Set(pedidos.map(p => p.clienteTelefone)).size;
+
+            document.getElementById('vendas-hoje').textContent = 'R$ ' + totalVendas.toFixed(2);
+            document.getElementById('pedidos-hoje').textContent = totalPedidos;
+            document.getElementById('produtos-estoque').textContent = totalEstoque;
+            document.getElementById('clientes-hoje').textContent = clientes;
+
+            document.getElementById('tabela-pedidos').innerHTML = pedidos.map(p => `
+                <tr>
+                    <td>#${p.id}</td>
+                    <td>${new Date(p.dataCriacao).toLocaleTimeString()}</td>
+                    <td>${p.clienteNome}<br><small>${p.clienteTelefone}</small></td>
+                    <td>${p.itens.length} itens</td>
+                    <td>R$ ${(p.total || 0).toFixed(2)}</td>
+                    <td class="status-${p.status}">${p.status}</td>
+                    <td>${p.status === 'ENTREGUE' ? `<button class="btn-pagar" onclick="pagar(${p.id})">💰 Pagar</button>` : '-'}</td>
+                </tr>
+            `).join('');
+
+            atualizarGraficos(pedidos);
+
+        } catch (err) {
+            console.error('Erro:', err);
+        }
+    }
+
+    function atualizarGraficos(pedidos) {
+        const horas = Array(24).fill(0);
+        pedidos.forEach(p => {
+            const hora = new Date(p.dataCriacao).getHours();
+            horas[hora] += (p.total || 0);
+        });
+
+        const ctxVendas = document.getElementById('grafico-vendas-hora').getContext('2d');
+        if (graficoVendasHora) graficoVendasHora.destroy();
+
+        graficoVendasHora = new Chart(ctxVendas, {
+            type: 'bar',
+            data: {
+                labels: Array.from({length: 24}, (_, i) => `${i.toString().padStart(2, '0')}h`),
+                datasets: [{
+                    label: 'Vendas (R$)',
+                    data: horas,
+                    backgroundColor: 'rgba(111, 78, 55, 0.8)',
+                    borderColor: '#6f4e37',
+                    borderWidth: 1,
+                    borderRadius: 3
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { display: false }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        ticks: {
+                            font: { size: 10 },
+                            callback: function(value) {
+                                return 'R$ ' + value.toFixed(0);
+                            }
+                        }
+                    },
+                    x: {
+                        ticks: {
+                            font: { size: 10 },
+                            maxTicksLimit: 12
+                        }
+                    }
+                }
+            }
+        });
+
+        const contagemProdutos = {};
+        pedidos.forEach(p => {
+            p.itens.forEach(item => {
+                const nome = item.produto.nome;
+                contagemProdutos[nome] = (contagemProdutos[nome] || 0) + item.quantidade;
+            });
+        });
+
+        const produtosOrdenados = Object.entries(contagemProdutos)
+            .sort((a, b) => b[1] - a[1])
+            .slice(0, 5);
+
+        const ctxProdutos = document.getElementById('grafico-produtos').getContext('2d');
+        if (graficoProdutos) graficoProdutos.destroy();
+
+        graficoProdutos = new Chart(ctxProdutos, {
+            type: 'doughnut',
+            data: {
+                labels: produtosOrdenados.map(p => p[0]),
+                datasets: [{
+                    data: produtosOrdenados.map(p => p[1]),
+                    backgroundColor: [
+                        '#6f4e37',
+                        '#8b6914',
+                        '#a0522d',
+                        '#cd853f',
+                        '#d2b48c'
+                    ],
+                    borderWidth: 2,
+                    borderColor: '#fff'
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        position: 'bottom',
+                        labels: {
+                            padding: 10,
+                            font: { size: 10 },
+                            boxWidth: 12
+                        }
+                    }
+                }
+            }
+        });
+    }
+
+    async function pagar(id) {
+        const forma = prompt('Forma de pagamento:\n1. Dinheiro\n2. Cartão Débito\n3. Cartão Crédito\n4. Pix');
+        const formas = { '1': 'DINHEIRO', '2': 'CARTAO_DEBITO', '3': 'CARTAO_CREDITO', '4': 'PIX' };
+        if (!formas[forma]) return;
+
+        try {
+            const response = await fetch(`/api/pedidos/${id}/pagar`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ formaPagamento: formas[forma] })
+            });
+            if (response.ok) {
+                alert('✅ Pagamento registrado!');
+                carregarDashboard();
+            }
+        } catch (err) {
+            alert('Erro');
+        }
+    }
+
+    carregarDashboard();
+</script>
+
+</body>
+</html>

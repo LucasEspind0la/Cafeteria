@@ -1,236 +1,263 @@
-// ===== CONFIGURAÇÃO =====
-const API_PRODUTOS = 'http://localhost:8080/api/produtos';
-const API_PEDIDOS = 'http://localhost:8080/api/pedidos';
-
-let produtos = [];
 let carrinho = [];
+let produtos = [];
 
-// ===== INICIALIZAÇÃO =====
-document.addEventListener('DOMContentLoaded', () => {
-    carregarCardapio();
-});
+const iconesCategoria = {
+    'Bebida': '☕',
+    'Lanche': '🥐',
+    'Doce': '🍰',
+    'Salgado': '🥪',
+    'Quente': '🔥',
+    'Gelado': '❄️',
+    'default': '🍽️'
+};
 
-// ===== CARREGAR CARDÁPIO =====
-async function carregarCardapio() {
+// Mapeamento robusto para qualquer variação
+function normalizarCategoria(valor) {
+    if (!valor) return '';
+    let str = String(valor).trim();
+
+    // Remove acentos
+    str = str.normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+
+    let lower = str.toLowerCase();
+
+    const mapa = {
+        'bebida': 'Bebida', 'bebidas': 'Bebida',
+        'lanche': 'Lanche', 'lanches': 'Lanche',
+        'doce': 'Doce', 'doces': 'Doce',
+        'salgado': 'Salgado', 'salgados': 'Salgado'
+    };
+
+    return mapa[lower] || str;
+}
+
+async function carregarProdutos() {
     const container = document.getElementById('produtos-container');
-    container.innerHTML = '<div class="loading">Carregando cardápio...</div>';
 
     try {
-        const res = await fetch(API_PRODUTOS);
-        produtos = await res.json();
-        renderizarCardapio(produtos);
+        const response = await fetch('/api/produtos');
+        if (!response.ok) throw new Error('Erro ' + response.status);
+
+        const dados = await response.json();
+
+        // Normaliza categorias
+        produtos = dados.map(p => {
+            let cat = normalizarCategoria(p.categoria);
+            // Se categoria vazia, tenta usar tipo
+            if (!cat && p.tipo) {
+                cat = normalizarCategoria(p.tipo);
+            }
+            return { ...p, categoria: cat };
+        });
+
+        if (produtos.length === 0) {
+            container.innerHTML = '<div class="loading">Nenhum produto disponível</div>';
+            return;
+        }
+
+        renderizarProdutos(produtos);
+
     } catch (err) {
+        console.error('Erro:', err);
         container.innerHTML = '<div class="loading">Erro ao carregar cardápio 😢</div>';
     }
 }
 
-// ===== RENDERIZAR =====
-function renderizarCardapio(lista) {
+function renderizarProdutos(lista) {
     const container = document.getElementById('produtos-container');
 
     if (lista.length === 0) {
-        container.innerHTML = '<div class="loading">Nenhum produto disponível</div>';
+        container.innerHTML = '<div class="loading">Nenhum produto encontrado nesta categoria 😢</div>';
         return;
     }
 
-    const fragment = document.createDocumentFragment();
+    container.innerHTML = lista.map(p => {
+        let imagemHTML;
+        if (p.imagem) {
+            imagemHTML = `<img src="${p.imagem}" alt="${p.nome}" onerror="this.parentElement.innerHTML='${getIcone(p)}'">`;
+        } else {
+            imagemHTML = getIcone(p);
+        }
 
-    lista.forEach(p => {
-        const card = document.createElement('div');
-        card.className = 'produto-loja';
-
-        // Emoji baseado no tipo
-        const emoji = p.tipo === 'Bebida' ? '☕' : p.tipo === 'Lanche' ? '🥐' : '🍰';
-
-        card.innerHTML = `
-            <div class="produto-imagem">${emoji}</div>
-            <div class="produto-info">
-                <div class="produto-nome">${escape(p.nome)}</div>
-                <div class="produto-desc">${escape(p.descricao) || p.tipo + ' - ' + p.categoria}</div>
-                <div class="produto-preco">R$ ${p.preco.toFixed(2)}</div>
-                <div class="produto-acoes">
-                    <div class="quantidade">
-                        <button onclick="ajustarQtd(${p.id}, -1)">−</button>
-                        <span id="qtd-${p.id}">1</span>
-                        <button onclick="ajustarQtd(${p.id}, 1)">+</button>
-                    </div>
-                    <button class="btn-add" onclick="adicionarAoCarrinho(${p.id})">
-                        Adicionar
-                    </button>
-                </div>
+        return `
+        <div class="produto-card" data-categoria="${p.categoria}">
+            <div class="produto-img">
+                ${imagemHTML}
             </div>
-        `;
-
-        fragment.appendChild(card);
-    });
-
-    container.innerHTML = '';
-    container.appendChild(fragment);
+            <div class="produto-info">
+                <div class="produto-header">
+                    <h3>${p.nome}</h3>
+                    <span class="produto-badge">${p.tipo || p.categoria}</span>
+                </div>
+                <div class="produto-preco">R$ ${Number(p.preco).toFixed(2)}</div>
+                <div class="produto-estoque">📦 ${p.estoque} unidades</div>
+                <p class="produto-descricao">${p.descricao || ''}</p>
+                <button class="btn-add" onclick="adicionarAoCarrinho(${p.id})">➕ Adicionar ao Carrinho</button>
+            </div>
+        </div>`;
+    }).join('');
 }
 
-// ===== FILTRAR CATEGORIA =====
+function getIcone(produto) {
+    return iconesCategoria[produto.categoria] ||
+        iconesCategoria[produto.tipo] ||
+        iconesCategoria['default'];
+}
+
 function filtrarCategoria(categoria) {
-    document.querySelectorAll('.cat-btn').forEach(b => b.classList.remove('active'));
-    event.target.classList.add('active');
+    const btnClicado = event.target.closest('.cat-btn');
+    if (!btnClicado) return;
+
+    document.querySelectorAll('.cat-btn').forEach(btn => btn.classList.remove('active'));
+    btnClicado.classList.add('active');
 
     if (!categoria) {
-        renderizarCardapio(produtos);
-        return;
+        renderizarProdutos(produtos);
+    } else {
+        const filtrados = produtos.filter(p => p.categoria === categoria);
+        renderizarProdutos(filtrados);
     }
-
-    const filtrados = produtos.filter(p => p.tipo === categoria);
-    renderizarCardapio(filtrados);
 }
 
-// ===== QUANTIDADE =====
-function ajustarQtd(id, delta) {
-    const span = document.getElementById(`qtd-${id}`);
-    let qtd = parseInt(span.textContent) + delta;
-    if (qtd < 1) qtd = 1;
-    if (qtd > 10) qtd = 10;
-    span.textContent = qtd;
-}
-
-// ===== CARRINHO =====
+// ============== CARRINHO ==============
 function adicionarAoCarrinho(id) {
     const produto = produtos.find(p => p.id === id);
-    const qtd = parseInt(document.getElementById(`qtd-${id}`).textContent);
+    if (!produto) return;
 
-    const existente = carrinho.find(item => item.produto.id === id);
-    if (existente) {
-        existente.quantidade += qtd;
+    const itemExistente = carrinho.find(item => item.id === id);
+    if (itemExistente) {
+        itemExistente.quantidade++;
     } else {
-        carrinho.push({ produto: produto, quantidade: qtd });
+        carrinho.push({
+            id: produto.id,
+            nome: produto.nome,
+            preco: Number(produto.preco),
+            quantidade: 1
+        });
     }
 
     atualizarCarrinho();
-    toast(`${produto.nome} adicionado!`, 'sucesso');
-
-    // Reset quantidade
-    document.getElementById(`qtd-${id}`).textContent = '1';
+    mostrarToast(produto.nome + ' adicionado!');
 }
 
-function removerDoCarrinho(id) {
-    carrinho = carrinho.filter(item => item.produto.id !== id);
-    atualizarCarrinho();
+function toggleCarrinho() {
+    const carrinhoEl = document.getElementById('carrinho');
+    const overlay = document.getElementById('overlay');
+    if (carrinhoEl.classList.contains('aberto')) {
+        carrinhoEl.classList.remove('aberto');
+        overlay.style.display = 'none';
+    } else {
+        carrinhoEl.classList.add('aberto');
+        overlay.style.display = 'block';
+    }
 }
 
 function atualizarCarrinho() {
-    const count = document.getElementById('cart-count');
-    const itensDiv = document.getElementById('carrinho-itens');
-    const totalSpan = document.getElementById('total-valor');
+    const itensEl = document.getElementById('carrinho-itens');
+    const countEl = document.getElementById('cart-count');
+    const totalEl = document.getElementById('total-valor');
 
-    const totalItens = carrinho.reduce((sum, item) => sum + item.quantidade, 0);
-    count.textContent = totalItens;
+    const totalItens = carrinho.reduce((s, item) => s + item.quantidade, 0);
+    const totalValor = carrinho.reduce((s, item) => s + (item.preco * item.quantidade), 0);
 
-    const total = carrinho.reduce((sum, item) =>
-        sum + (item.produto.preco * item.quantidade), 0);
-    totalSpan.textContent = `R$ ${total.toFixed(2)}`;
+    countEl.textContent = totalItens;
+    totalEl.textContent = 'R$ ' + totalValor.toFixed(2);
 
     if (carrinho.length === 0) {
-        itensDiv.innerHTML = '<p class="vazio">Carrinho vazio</p>';
+        itensEl.innerHTML = '<p class="vazio">Carrinho vazio</p>';
         return;
     }
 
-    itensDiv.innerHTML = carrinho.map(item => `
-        <div class="item-carrinho">
-            <div class="item-info">
-                <h4>${escape(item.produto.nome)}</h4>
-                <p>${item.quantidade}x R$ ${item.produto.preco.toFixed(2)}</p>
+    itensEl.innerHTML = carrinho.map(item => `
+        <div class="carrinho-item">
+            <div>
+                <strong>${item.nome}</strong>
+                <div>R$ ${item.preco.toFixed(2)} x ${item.quantidade}</div>
             </div>
-            <div class="item-preco">R$ ${(item.produto.preco * item.quantidade).toFixed(2)}</div>
-            <button class="btn-remover" onclick="removerDoCarrinho(${item.produto.id})">×</button>
+            <div class="item-acoes">
+                <button onclick="alterarQuantidade(${item.id}, -1)">-</button>
+                <span>${item.quantidade}</span>
+                <button onclick="alterarQuantidade(${item.id}, 1)">+</button>
+                <button onclick="removerItem(${item.id})">🗑️</button>
+            </div>
         </div>
     `).join('');
 }
 
-function toggleCarrinho() {
-    document.getElementById('carrinho').classList.toggle('aberto');
-    document.getElementById('overlay').classList.toggle('ativo');
+function alterarQuantidade(id, delta) {
+    const item = carrinho.find(i => i.id === id);
+    if (!item) return;
+    item.quantidade += delta;
+    if (item.quantidade <= 0) removerItem(id);
+    else atualizarCarrinho();
 }
 
-// ===== FINALIZAR PEDIDO =====
+function removerItem(id) {
+    carrinho = carrinho.filter(i => i.id !== id);
+    atualizarCarrinho();
+}
+
 function finalizarPedido() {
     if (carrinho.length === 0) {
-        toast('Adicione itens ao carrinho primeiro!', 'erro');
+        alert('Carrinho vazio!');
         return;
     }
-
-    const resumo = document.getElementById('resumo-pedido');
-    const total = carrinho.reduce((sum, item) =>
-        sum + (item.produto.preco * item.quantidade), 0);
-
-    resumo.innerHTML = `
-        <h4>Itens:</h4>
+    const resumoEl = document.getElementById('resumo-pedido');
+    const total = carrinho.reduce((s, item) => s + (item.preco * item.quantidade), 0);
+    resumoEl.innerHTML = `
+        <h4>Itens do pedido:</h4>
         ${carrinho.map(item => `
-            <p>${item.quantidade}x ${escape(item.produto.nome)} - R$ ${(item.produto.preco * item.quantidade).toFixed(2)}</p>
+            <div>${item.quantidade}x ${item.nome} - R$ ${(item.preco * item.quantidade).toFixed(2)}</div>
         `).join('')}
         <hr>
-        <p><strong>Total: R$ ${total.toFixed(2)}</strong></p>
+        <div><strong>Total: R$ ${total.toFixed(2)}</strong></div>
     `;
-
-    document.getElementById('modal-pedido').classList.add('ativo');
+    document.getElementById('modal-pedido').style.display = 'flex';
 }
 
 function fecharModal() {
-    document.getElementById('modal-pedido').classList.remove('ativo');
+    document.getElementById('modal-pedido').style.display = 'none';
 }
 
 async function confirmarPedido() {
-    const nome = document.getElementById('nome-cliente').value.trim();
-    const telefone = document.getElementById('telefone-cliente').value.trim();
-
+    const nome = document.getElementById('nome-cliente').value;
+    const telefone = document.getElementById('telefone-cliente').value;
     if (!nome || !telefone) {
-        toast('Preencha todos os campos!', 'erro');
+        alert('Preencha nome e telefone!');
         return;
     }
-
-    const pedido = {
-        clienteNome: nome,
-        clienteTelefone: telefone,
-        itens: carrinho.map(item => ({
-            produtoId: item.produto.id,
-            quantidade: item.quantidade
-        }))
-    };
-
+    const itens = carrinho.map(item => ({
+        produtoId: item.id,
+        quantidade: item.quantidade
+    }));
     try {
-        const res = await fetch(API_PEDIDOS, {
+        const response = await fetch('/api/pedidos', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(pedido)
+            body: JSON.stringify({ clienteNome: nome, clienteTelefone: telefone, itens: itens })
         });
-
-        if (!res.ok) throw new Error('Erro ao criar pedido');
-
-        const resultado = await res.json();
-
-        toast(`Pedido #${resultado.id} confirmado!`, 'sucesso');
-        carrinho = [];
-        atualizarCarrinho();
-        fecharModal();
-        toggleCarrinho();
-
-        // Limpar formulário
-        document.getElementById('nome-cliente').value = '';
-        document.getElementById('telefone-cliente').value = '';
-
+        if (response.ok) {
+            const pedido = await response.json();
+            alert('Pedido #' + pedido.id + ' confirmado!');
+            carrinho = [];
+            atualizarCarrinho();
+            fecharModal();
+        } else {
+            alert('Erro ao confirmar pedido');
+        }
     } catch (err) {
-        toast('Erro: ' + err.message, 'erro');
+        alert('Erro de conexão');
     }
 }
 
-// ===== UTILITÁRIOS =====
-function toast(msg, tipo) {
-    const t = document.getElementById('toast');
-    t.textContent = msg;
-    t.className = `toast ${tipo} show`;
-    setTimeout(() => t.classList.remove('show'), 3000);
+function mostrarToast(mensagem) {
+    const toast = document.getElementById('toast');
+    if (!toast) return;
+    toast.textContent = mensagem;
+    toast.classList.add('show');
+    setTimeout(() => toast.classList.remove('show'), 3000);
 }
 
-function escape(text) {
-    if (!text) return '';
-    const div = document.createElement('div');
-    div.textContent = text;
-    return div.innerHTML;
-}
+document.addEventListener('DOMContentLoaded', function() {
+    carregarProdutos();
+});

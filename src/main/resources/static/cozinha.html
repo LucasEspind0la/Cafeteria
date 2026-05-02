@@ -1,0 +1,374 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>👨‍🍳 Cozinha - Pedidos</title>
+    <link rel="stylesheet" href="style.css">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: 'Segoe UI', Arial, sans-serif;
+            background: #f5f0eb;
+            color: #333;
+            padding: 20px;
+            min-height: 100vh;
+        }
+
+        /* ===== NAVEGAÇÃO - Mesmo padrão das outras páginas ===== */
+        .nav-header {
+            background: #6f4e37;
+            padding: 15px 20px;
+            display: flex;
+            gap: 15px;
+            align-items: center;
+            flex-wrap: wrap;
+            border-radius: 12px;
+            margin-bottom: 25px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        .nav-header a {
+            color: rgba(255,255,255,0.9);
+            text-decoration: none;
+            padding: 8px 16px;
+            border-radius: 8px;
+            background: rgba(255,255,255,0.1);
+            border: 1px solid rgba(255,255,255,0.2);
+            font-size: 0.9rem;
+            font-weight: 600;
+            transition: all 0.2s ease;
+        }
+        .nav-header a:hover {
+            background: rgba(255,255,255,0.25);
+        }
+        .nav-header .ativo {
+            background: rgba(255,255,255,0.35);
+            font-weight: bold;
+            border-color: rgba(255,255,255,0.4);
+        }
+        .user-info {
+            margin-left: auto;
+            color: rgba(255,255,255,0.9);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 0.85rem;
+        }
+        .user-info strong {
+            color: #fff;
+        }
+        .btn-logout {
+            background: rgba(231, 76, 60, 0.8);
+            border: none;
+            color: white;
+            padding: 6px 12px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.8rem;
+            transition: background 0.2s;
+        }
+        .btn-logout:hover {
+            background: rgba(231, 76, 60, 1);
+        }
+
+        /* ===== TÍTULO ===== */
+        h1 {
+            text-align: center;
+            color: #6f4e37;
+            margin-bottom: 25px;
+            font-size: 2rem;
+        }
+
+        /* ===== FILTROS ===== */
+        .filtros {
+            display: flex;
+            gap: 12px;
+            justify-content: center;
+            margin-bottom: 25px;
+            flex-wrap: wrap;
+        }
+        .filtro-btn {
+            padding: 10px 20px;
+            border: 2px solid #6f4e37;
+            border-radius: 25px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 0.9rem;
+            background: white;
+            color: #6f4e37;
+            transition: all 0.2s ease;
+        }
+        .filtro-btn:hover {
+            background: #f0e6dc;
+        }
+        .filtro-btn.active {
+            background: #6f4e37;
+            color: white;
+            border-color: #6f4e37;
+        }
+
+        /* ===== GRID DE PEDIDOS ===== */
+        .pedidos-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+            gap: 20px;
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        /* ===== CARDS - Estilo igual aos produtos ===== */
+        .pedido-card {
+            background: white;
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+            transition: transform 0.2s, box-shadow 0.2s;
+            border-top: 4px solid;
+        }
+        .pedido-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 8px 25px rgba(0,0,0,0.12);
+        }
+        .pedido-card.PENDENTE {
+            border-top-color: #f39c12;
+        }
+        .pedido-card.PREPARO {
+            border-top-color: #3498db;
+        }
+        .pedido-card.PRONTO {
+            border-top-color: #27ae60;
+        }
+
+        .pedido-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 12px;
+        }
+        .pedido-id {
+            font-size: 1.3rem;
+            font-weight: bold;
+            color: #6f4e37;
+        }
+        .status {
+            padding: 4px 12px;
+            border-radius: 12px;
+            font-size: 0.75rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        .status-PENDENTE {
+            background: #fef3e2;
+            color: #d68910;
+        }
+        .status-PREPARO {
+            background: #ebf5fb;
+            color: #2980b9;
+        }
+        .status-PRONTO {
+            background: #eafaf1;
+            color: #27ae60;
+        }
+
+        .cliente-info {
+            color: #7f8c8d;
+            font-size: 0.85rem;
+            margin-bottom: 12px;
+            line-height: 1.5;
+            padding-bottom: 12px;
+            border-bottom: 1px solid #f0f0f0;
+        }
+
+        .itens-lista {
+            margin: 12px 0;
+            padding-left: 0;
+            list-style: none;
+        }
+        .itens-lista li {
+            padding: 6px 0;
+            font-size: 0.95rem;
+            color: #555;
+            border-bottom: 1px dashed #eee;
+        }
+        .itens-lista li:last-child {
+            border-bottom: none;
+        }
+
+        .pedido-total {
+            font-size: 1.2rem;
+            font-weight: bold;
+            color: #27ae60;
+            margin: 15px 0;
+            text-align: right;
+        }
+
+        .acoes {
+            display: flex;
+            gap: 10px;
+            margin-top: 15px;
+        }
+        .btn-acao {
+            flex: 1;
+            padding: 12px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 0.9rem;
+            transition: all 0.2s;
+        }
+        .btn-preparo {
+            background: #3498db;
+            color: white;
+        }
+        .btn-preparo:hover {
+            background: #2980b9;
+        }
+        .btn-pronto {
+            background: #27ae60;
+            color: white;
+        }
+        .btn-pronto:hover {
+            background: #219a52;
+        }
+        .btn-entregar {
+            background: #9b59b6;
+            color: white;
+        }
+        .btn-entregar:hover {
+            background: #8e44ad;
+        }
+
+        .sem-pedidos {
+            text-align: center;
+            padding: 60px 20px;
+            color: #7f8c8d;
+            grid-column: 1 / -1;
+            background: white;
+            border-radius: 12px;
+            font-size: 1.1rem;
+        }
+
+        .atualizacao {
+            text-align: center;
+            color: #95a5a6;
+            font-size: 0.85rem;
+            margin-top: 30px;
+            padding: 15px;
+        }
+    </style>
+</head>
+<body>
+
+<div class="nav-header">
+    <a href="index.html">🏠 Loja</a>
+    <a href="Dashboard.html">📊 Dashboard</a>
+    <a href="admin.html">☕ Gestão Produtos</a>
+    <a href="cozinha.html" class="ativo">👨‍🍳 Cozinha</a>
+    <a href="notificacoes.html">🔔 Notificações</a>
+
+    <div class="user-info">
+        <span>👤 <strong id="nome-usuario">Admin</strong></span>
+        <form action="/logout" method="post" style="display:inline;">
+            <button type="submit" class="btn-logout">Sair</button>
+        </form>
+    </div>
+</div>
+
+<h1>👨‍🍳 Painel da Cozinha</h1>
+
+<div class="filtros">
+    <button class="filtro-btn active" onclick="filtrar('todos')">Todos</button>
+    <button class="filtro-btn" onclick="filtrar('PENDENTE')">🟡 Pendentes</button>
+    <button class="filtro-btn" onclick="filtrar('PREPARO')">🔵 Em Preparo</button>
+    <button class="filtro-btn" onclick="filtrar('PRONTO')">🟢 Prontos</button>
+</div>
+
+<div id="pedidos-container" class="pedidos-grid">
+    <div class="sem-pedidos">Carregando pedidos...</div>
+</div>
+
+<div class="atualizacao">Atualiza automaticamente a cada 10 segundos</div>
+
+<script>
+    let filtroAtual = 'todos';
+
+    function filtrar(status) {
+        filtroAtual = status;
+        document.querySelectorAll('.filtro-btn').forEach(btn => btn.classList.remove('active'));
+        event.target.classList.add('active');
+        carregarPedidos();
+    }
+
+    async function carregarPedidos() {
+        try {
+            const response = await fetch('/api/pedidos/ativos');
+            if (!response.ok) throw new Error('Sem acesso');
+
+            let pedidos = await response.json();
+
+            if (filtroAtual !== 'todos') {
+                pedidos = pedidos.filter(p => p.status === filtroAtual);
+            }
+
+            const container = document.getElementById('pedidos-container');
+
+            if (pedidos.length === 0) {
+                container.innerHTML = '<div class="sem-pedidos">Nenhum pedido nesta categoria ☕</div>';
+                return;
+            }
+
+            container.innerHTML = pedidos.map(p => `
+                <div class="pedido-card ${p.status}">
+                    <div class="pedido-header">
+                        <span class="pedido-id">#${p.id}</span>
+                        <span class="status status-${p.status}">${p.status}</span>
+                    </div>
+                    <div class="cliente-info">
+                        👤 ${p.clienteNome} | 📞 ${p.clienteTelefone}<br>
+                        🕐 ${new Date(p.dataCriacao).toLocaleTimeString()}
+                    </div>
+                    <ul class="itens-lista">
+                        ${p.itens.map(item => `<li>${item.quantidade}x ${item.produto.nome}</li>`).join('')}
+                    </ul>
+                    <div class="pedido-total">Total: R$ ${p.total.toFixed(2)}</div>
+                    <div class="acoes">
+                        ${p.status === 'PENDENTE' ? `<button class="btn-acao btn-preparo" onclick="atualizarStatus(${p.id}, 'PREPARO')">▶️ Iniciar Preparo</button>` : ''}
+                        ${p.status === 'PREPARO' ? `<button class="btn-acao btn-pronto" onclick="atualizarStatus(${p.id}, 'PRONTO')">✅ Pronto</button>` : ''}
+                        ${p.status === 'PRONTO' ? `<button class="btn-acao btn-entregar" onclick="atualizarStatus(${p.id}, 'ENTREGUE')">🚀 Entregue</button>` : ''}
+                    </div>
+                </div>
+            `).join('');
+
+        } catch (err) {
+            document.getElementById('pedidos-container').innerHTML = '<div class="sem-pedidos">Erro ao carregar</div>';
+        }
+    }
+
+    async function atualizarStatus(id, status) {
+        try {
+            const response = await fetch(`/api/pedidos/${id}/status?status=${status}`, {
+                method: 'PUT'
+            });
+            if (response.ok) carregarPedidos();
+            else alert('Erro ao atualizar status');
+        } catch (err) {
+            alert('Erro de conexão');
+        }
+    }
+
+    fetch('/api/auth/me').then(r => r.json()).then(data => {
+        if (!data.authenticated || !data.authorities.some(a => a.authority === 'ROLE_ADMIN')) {
+            window.location.href = 'index.html';
+        }
+        document.getElementById('nome-usuario').textContent = data.username;
+    });
+
+    carregarPedidos();
+    setInterval(carregarPedidos, 10000);
+</script>
+
+</body>
+</html>

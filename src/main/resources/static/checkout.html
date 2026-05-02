@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <title>📋 Checkout - Pedido Confirmado</title>
+    <link rel="stylesheet" href="style.css">
+    <style>
+        .nav-header { background: #6f4e37; padding: 15px; display: flex; gap: 15px; align-items: center; flex-wrap: wrap; }
+        .nav-header a { color: white; text-decoration: none; padding: 8px 16px; border-radius: 6px; background: rgba(255,255,255,0.15); }
+        .nav-header a:hover { background: rgba(255,255,255,0.3); }
+        .user-info { margin-left: auto; color: white; display: flex; align-items: center; gap: 10px; }
+        .btn-logout { background: #e74c3c; border: none; color: white; padding: 6px 12px; border-radius: 4px; cursor: pointer; }
+
+        .checkout { max-width: 600px; margin: 40px auto; text-align: center; padding: 20px; }
+        .sucesso { font-size: 4rem; margin-bottom: 20px; }
+        h1 { color: #6f4e37; }
+        .pedido-info { background: white; padding: 20px; border-radius: 8px; margin: 20px 0; text-align: left; }
+        .btn-voltar { display: inline-block; margin-top: 20px; padding: 12px 24px; background: #6f4e37; color: white; text-decoration: none; border-radius: 6px; }
+    </style>
+</head>
+<body>
+
+<!-- NAVEGAÇÃO -->
+<div class="nav-header">
+    <a href="index.html">🏠 Loja</a>
+    <a href="notificacoes.html">🔔 Notificações</a>
+
+    <div class="user-info">
+        <span>👤 <strong id="nome-usuario">...</strong></span>
+        <form action="/logout" method="post" style="display:inline;">
+            <button type="submit" class="btn-logout">Sair</button>
+        </form>
+    </div>
+</div>
+
+<div class="checkout">
+    <div class="sucesso">✅</div>
+    <h1>Pedido Confirmado!</h1>
+    <p>Seu pedido foi recebido com sucesso.</p>
+
+    <div class="pedido-info" id="pedido-info">
+        <!-- Preenche via JS -->
+    </div>
+
+    <a href="index.html" class="btn-voltar">← Voltar para a Loja</a>
+</div>
+
+<script>
+    fetch('/api/auth/me').then(r => r.json()).then(data => {
+        if (!data.authenticated) { window.location.href = 'login.html'; return; }
+        document.getElementById('nome-usuario').textContent = data.username;
+    });
+
+    // Mostra resumo do pedido (se passado via URL ou sessionStorage)
+    const pedidoId = new URLSearchParams(window.location.search).get('pedido');
+    if (pedidoId) {
+        document.getElementById('pedido-info').innerHTML = `<p><strong>Número do pedido:</strong> #${pedidoId}</p>`;
+    }
+</script>
+
+</body>
+</html>
