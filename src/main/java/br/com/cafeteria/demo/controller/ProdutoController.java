@@ -31,14 +31,13 @@ public class ProdutoController {
     @PostMapping
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<Produto> criar(@RequestBody Produto produto) {
-        return ResponseEntity.ok(produtoService.salvar(produto));
+        return ResponseEntity.ok(produtoService.salvar(produto));  // ← Agora funciona!
     }
 
     @PutMapping("/{id}")
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<Produto> atualizar(@PathVariable Long id, @RequestBody Produto produto) {
-        produto.setId(id);
-        return ResponseEntity.ok(produtoService.salvar(produto));
+        return ResponseEntity.ok(produtoService.atualizar(id, produto));  // ← Usa atualizar() correto!
     }
 
     @DeleteMapping("/{id}")
