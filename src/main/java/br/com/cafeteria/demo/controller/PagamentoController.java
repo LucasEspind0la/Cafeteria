@@ -17,7 +17,7 @@ public class PagamentoController {
     @Autowired
     private PagamentoService pagamentoService;
 
-    // POST /api/pagamentos/criar → Cria intenção de pagamento
+    // POST /api/pagamentos/Criar intenção de pagamento
     @PostMapping("/criar")
     public ResponseEntity<?> criarPagamento(@RequestBody PagamentoRequest request) {
         try {
@@ -32,8 +32,7 @@ public class PagamentoController {
             return ResponseEntity.badRequest().body("Erro: " + e.getMessage());
         }
     }
-
-    // POST /api/pagamentos/simular → Pagamento de teste (sem Stripe)
+    // POST /api/pagamentos/simular Pagamento de teste (sem Stripe)
     @PostMapping("/simular")
     public ResponseEntity<Pagamento> simularPagamento(@RequestBody PagamentoRequest request) {
         Pagamento pagamento = pagamentoService.simularPagamento(

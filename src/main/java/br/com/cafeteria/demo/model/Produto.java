@@ -38,6 +38,4 @@ public class Produto {
     @Column(length = 500)
     private String imagem;  // ← URL da imagem
 
-    // Se quiser imagem em base64 ou arquivo, seria diferente
-    // Mas URL é mais simples e funciona perfeitamente
 }
