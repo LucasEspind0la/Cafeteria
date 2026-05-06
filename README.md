@@ -12,22 +12,22 @@ Este sistema foi criado para atender às necessidades de uma cafeteria, oferecen
 🏪 Loja Virtual
 Interface limpa e intuitiva para os clientes navegarem pelo cardápio, filtrar por categorias (Bebidas, Lanches, Doces) e adicionar itens ao carrinho.
 <p align="center">
-  <img src="./assets/loja.png" width="90%" alt="Loja Virtual" />
+  <img src="https://github.com/LucasEspind0la/Cafeteria/blob/main/assets/Captura%20de%20tela%20de%202026-05-05%2021-43-20.png?raw=true" width="90%" alt="Loja Virtual" />
 </p>
 📊 Dashboard Administrativo
 Painel com visão geral do negócio: vendas do dia, total de pedidos, estoque disponível, clientes atendidos e gráficos de análise (vendas por hora e top produtos).
 <p align="center">
-  <img src="./assets/dashboard.png" width="90%" alt="Dashboard" />
+  <img src="https://github.com/LucasEspind0la/Cafeteria/blob/main/assets/Captura%20de%20tela%20de%202026-05-05%2021-44-27.png?raw=true" width="90%" alt="Dashboard" />
 </p>
 📝 Gestão de Produtos
 CRUD completo para administrar o cardápio: adicionar, editar e excluir produtos com controle de nome, preço, categoria, tipo (quente/gelado) e quantidade em estoque.
 <p align="center">
-  <img src="./assets/gestao.png" width="90%" alt="Gestão de Produtos" />
+  <img src="https://github.com/LucasEspind0la/Cafeteria/blob/main/assets/Captura%20de%20tela%20de%202026-05-05%2021-45-26.png?raw=true" width="90%" alt="Gestão de Produtos" />
 </p>
 👨‍🍳 Painel da Cozinha
 Visão em tempo real dos pedidos com status atualizado (Pendente → Em Preparo → Pronto). Interface otimizada para o fluxo de trabalho da cozinha.
 <p align="center">
-  <img src="./assets/cozinha.png" width="90%" alt="Painel da Cozinha" />
+  <img src="https://github.com/LucasEspind0la/Cafeteria/blob/main/assets/Captura%20de%20tela%20de%202026-05-05%2021-45-32.png?raw=true" width="90%" alt="Painel da Cozinha" />
 </p>
 🚀 Tecnologias Utilizadas
 <div align="left">
@@ -58,7 +58,7 @@ bash
 Copy
 
 # Clone o repositório
-git clone https://github.com/LucasEspind0la/cafeteria.git
+git clone https://github.com/LucasEspind0la/Cafeteria.git
 
 # Configure o banco PostgreSQL
 # Execute os scripts SQL em /database
