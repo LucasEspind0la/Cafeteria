@@ -67,7 +67,6 @@ git clone https://github.com/LucasEspind0la/Cafeteria.git
 ./mvnw spring-boot:run
 
 # Acesse no navegador
-http://localhost:8080
 
 📬 Contato
 <p align="center">
