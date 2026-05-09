@@ -9,6 +9,8 @@ Este sistema foi criado para atender às necessidades de uma cafeteria, oferecen
     👨‍🍳 Painel da cozinha para acompanhamento de pedidos
 
 🖼️ Screenshots
+
+
 🏪 Loja Virtual
 Interface limpa e intuitiva para os clientes navegarem pelo cardápio, filtrar por categorias (Bebidas, Lanches, Doces) e adicionar itens ao carrinho.
 
