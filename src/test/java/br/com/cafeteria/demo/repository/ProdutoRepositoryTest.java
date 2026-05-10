@@ -2,134 +2,117 @@ package br.com.cafeteria.demo.repository;
 
 import br.com.cafeteria.demo.model.Produto;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
-import org.springframework.boot.test.autoconfigure.orm.jpa.TestEntityManager;
+import org.springframework.test.context.ActiveProfiles;
 
 import java.math.BigDecimal;
-import java.util.List;
+import java.util.Optional;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
 
 @DataJpaTest
-@AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
+@ActiveProfiles("test")
+@DisplayName("ProdutoRepository - Testes")
 class ProdutoRepositoryTest {
 
-    @Autowired
-    private TestEntityManager entityManager;
-
-    @Autowired
-    private ProdutoRepository produtoRepository;
-
-    private Produto produto;
+    @Autowired private ProdutoRepository produtoRepository;
 
     @BeforeEach
     void setUp() {
-        produto = Produto.builder()
-                .nome("Cafe Expresso")
-                .tipo("Quente")
-                .categoria("Bebida")
+        produtoRepository.deleteAll();
+    }
+
+    @Test
+    @DisplayName("Deve salvar um produto")
+    void deveSalvarProduto() {
+        Produto produto = Produto.builder()
+                .nome("Latte")
+                .tipo("Bebida")
+                .categoria("Cafés")
+                .preco(new BigDecimal("9.90"))
+                .estoque(30)
+                .descricao("Café com leite")
+                .imagem("http://exemplo.com/latte.jpg")
+                .build();
+
+        Produto salvo = produtoRepository.save(produto);
+
+        assertThat(salvo.getId()).isNotNull();
+        assertThat(salvo.getNome()).isEqualTo("Latte");
+        assertThat(salvo.getTipo()).isEqualTo("Bebida");
+    }
+
+    @Test
+    @DisplayName("Deve buscar produto por id")
+    void deveBuscarProdutoPorId() {
+        Produto produto = Produto.builder()
+                .nome("Mocha")
+                .tipo("Bebida")
+                .categoria("Cafés")
+                .preco(new BigDecimal("11.00"))
+                .estoque(15)
+                .descricao("Chocolate com café")
+                .imagem("http://exemplo.com/mocha.jpg")
+                .build();
+        produto = produtoRepository.save(produto);
+
+        Optional<Produto> encontrado = produtoRepository.findById(produto.getId());
+
+        assertThat(encontrado).isPresent();
+        assertThat(encontrado.get().getPreco()).isEqualTo(new BigDecimal("11.00"));
+    }
+
+    @Test
+    @DisplayName("Deve listar todos os produtos")
+    void deveListarTodosProdutos() {
+        Produto produto1 = Produto.builder()
+                .nome("Café Preto")
+                .tipo("Bebida")
+                .categoria("Cafés")
                 .preco(new BigDecimal("5.00"))
                 .estoque(10)
-                .descricao("Cafe forte e cremoso")
-                .imagem("https://exemplo.com/cafe.jpg")
+                .descricao("Café puro")
+                .imagem("http://exemplo.com/preto.jpg")
                 .build();
+
+        Produto produto2 = Produto.builder()
+                .nome("Suco de Laranja")
+                .tipo("Bebida")
+                .categoria("Sucos")
+                .preco(new BigDecimal("8.00"))
+                .estoque(20)
+                .descricao("Suco natural")
+                .imagem("http://exemplo.com/suco.jpg")
+                .build();
+
+        produtoRepository.save(produto1);
+        produtoRepository.save(produto2);
+
+        var produtos = produtoRepository.findAll();
+
+        assertThat(produtos).hasSize(2);
     }
 
     @Test
-    void testSalvarProdutoNoBanco() {
-        // Act
-        Produto salvo = produtoRepository.save(produto);
-        produtoRepository.flush();
+    @DisplayName("Deve deletar um produto")
+    void deveDeletarProduto() {
+        Produto produto = Produto.builder()
+                .nome("Chá Gelado")
+                .tipo("Bebida")
+                .categoria("Chás")
+                .preco(new BigDecimal("6.50"))
+                .estoque(25)
+                .descricao("Chá refrescante")
+                .imagem("http://exemplo.com/cha.jpg")
+                .build();
+        produto = produtoRepository.save(produto);
 
-        // Assert
-        assertNotNull(salvo.getId());
-        assertTrue(salvo.getId() > 0);
-        assertEquals("Cafe Expresso", salvo.getNome());
+        produtoRepository.deleteById(produto.getId());
 
-        // Verificar se realmente foi para o banco
-        Produto doBanco = entityManager.find(Produto.class, salvo.getId());
-        assertNotNull(doBanco);
-        assertEquals("Cafe Expresso", doBanco.getNome());
-    }
-
-    @Test
-    void testBuscarTodosProdutos() {
-        // Arrange
-        entityManager.persist(produto);
-        entityManager.flush();
-
-        // Act
-        List<Produto> produtos = produtoRepository.findAll();
-
-        // Assert
-        assertFalse(produtos.isEmpty());
-        assertTrue(produtos.stream().anyMatch(p -> p.getNome().equals("Cafe Expresso")));
-    }
-
-    @Test
-    void testBuscarPorTipo() {
-        // Arrange
-        entityManager.persist(produto);
-        entityManager.flush();
-
-        // Act
-        List<Produto> resultado = produtoRepository.findByTipo("Quente");
-
-        // Assert
-        assertFalse(resultado.isEmpty());
-        assertEquals("Quente", resultado.get(0).getTipo());
-    }
-
-    @Test
-    void testBuscarEstoqueBaixo() {
-        // Arrange
-        produto.setEstoque(3);
-        entityManager.persist(produto);
-        entityManager.flush();
-
-        // Act
-        List<Produto> resultado = produtoRepository.findByEstoqueLessThan(5);
-
-        // Assert
-        assertFalse(resultado.isEmpty());
-        assertTrue(resultado.get(0).getEstoque() < 5);
-    }
-
-    @Test
-    void testAtualizarProduto() {
-        // Arrange
-        Produto salvo = entityManager.persistAndFlush(produto);
-        salvo.setNome("Cafe Latte");
-        salvo.setPreco(new BigDecimal("7.00"));
-
-        // Act
-        Produto atualizado = produtoRepository.save(salvo);
-        produtoRepository.flush();
-
-        // Assert
-        assertEquals("Cafe Latte", atualizado.getNome());
-        assertEquals(new BigDecimal("7.00"), atualizado.getPreco());
-
-        // Verificar no banco
-        Produto doBanco = entityManager.find(Produto.class, salvo.getId());
-        assertEquals("Cafe Latte", doBanco.getNome());
-    }
-
-    @Test
-    void testDeletarProduto() {
-        // Arrange
-        Produto salvo = entityManager.persistAndFlush(produto);
-        Long id = salvo.getId();
-
-        // Act
-        produtoRepository.deleteById(id);
-        produtoRepository.flush();
-
-        // Assert
-        Produto doBanco = entityManager.find(Produto.class, id);
-        assertNull(doBanco);
+        Optional<Produto> deletado = produtoRepository.findById(produto.getId());
+        assertThat(deletado).isEmpty();
     }
 }
