@@ -1,7 +1,6 @@
 package br.com.cafeteria.demo.repository;
 
 import br.com.cafeteria.demo.model.Pedido;
-import br.com.cafeteria.demo.model.Produto;
 import br.com.cafeteria.demo.model.StatusPedido;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -80,7 +79,6 @@ class PedidoRepositoryTest {
                 .build();
         pedidoRepository.save(pedido1);
 
-        // Delay para garantir timestamps diferentes
         try { Thread.sleep(10); } catch (InterruptedException ignored) {}
 
         Pedido pedido2 = Pedido.builder()

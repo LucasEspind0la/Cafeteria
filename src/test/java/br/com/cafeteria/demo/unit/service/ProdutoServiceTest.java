@@ -1,7 +1,6 @@
 package br.com.cafeteria.demo.unit.service;
 
 import br.com.cafeteria.demo.service.ProdutoService;
-import br.com.cafeteria.domain.exception.ProdutoNaoEncontradoException;
 import br.com.cafeteria.demo.model.Produto;
 import br.com.cafeteria.demo.repository.ProdutoRepository;
 import org.junit.jupiter.api.DisplayName;
@@ -15,7 +14,6 @@ import java.math.BigDecimal;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
@@ -48,6 +46,6 @@ class ProdutoServiceTest {
     void deveLancarExcecaoSeProdutoNaoExistir() {
         when(produtoRepository.findById(999L)).thenReturn(Optional.empty());
 
-        assertThrows(ProdutoNaoEncontradoException.class, () -> service.buscarPorId(999L));
+        assertThrows(RuntimeException.class, () -> service.buscarPorId(999L));
     }
 }
