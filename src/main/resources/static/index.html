@@ -30,6 +30,24 @@
             background: rgba(255, 255, 255, 0.25);
         }
 
+        .btn-logout {
+            color: #ff6b6b;
+            text-decoration: none;
+            font-size: 0.9rem;
+            font-weight: 600;
+            padding: 8px 16px;
+            border-radius: 8px;
+            transition: all 0.2s ease;
+            background: rgba(255, 107, 107, 0.15);
+            border: 1px solid rgba(255, 107, 107, 0.3);
+            cursor: pointer;
+        }
+
+        .btn-logout:hover {
+            background: rgba(255, 107, 107, 0.3);
+            color: #ff8e8e;
+        }
+
         .separator {
             width: 1px;
             height: 20px;
@@ -54,6 +72,10 @@
             <div class="carrinho-btn" onclick="toggleCarrinho()">
                 🛒 <span id="cart-count">0</span>
             </div>
+
+            <div class="separator"></div>
+
+            <button class="btn-logout" onclick="logout()">🚪 Sair</button>
         </nav>
     </header>
 
@@ -97,6 +119,18 @@
     <div id="toast" class="toast"></div>
 </div>
 
+<script>
+    function logout() {
+        // Remove o token/sessionStorage/localStorage se estiver usando
+        localStorage.removeItem('token');
+        localStorage.removeItem('usuario');
+        sessionStorage.removeItem('token');
+        sessionStorage.removeItem('usuario');
+
+        // Redireciona para a página de login
+        window.location.href = 'http://localhost:8080/login.html';
+    }
+</script>
 <script src="loja.js"></script>
 </body>
 </html>

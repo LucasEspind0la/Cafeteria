@@ -1,82 +1,99 @@
-# ☕ Sistema de Gestão para Cafeteria
+☕ Sistema de Cafeteria
+Sistema completo para gestão de cafeteria, desenvolvido com foco em usabilidade, organização e eficiência no dia a dia de um negócio real.
+📋 Sobre o Projeto
+Este sistema foi criado para atender às necessidades de uma cafeteria, oferecendo:
 
-![Java](https://img.shields.io/badge/Java-17/21-orange?style=for-the-badge&logo=openjdk)
-![Spring Boot](https://img.shields.io/badge/Spring%20Boot-3.3.4-brightgreen?style=for-the-badge&logo=springboot)
-![PostgreSQL](https://img.shields.io/badge/PostgreSQL-Database-blue?style=for-the-badge&logo=postgresql)
-![Maven](https://img.shields.io/badge/Maven-Build-red?style=for-the-badge&logo=apachemaven)
-![License](https://img.shields.io/badge/License-MIT-yellow.svg?style=for-the-badge)
+    🏪 Loja virtual para clientes visualizarem o cardápio
+    📊 Dashboard administrativo com métricas de vendas
+    📝 Gestão de produtos com controle de estoque
+    👨‍🍳 Painel da cozinha para acompanhamento de pedidos
 
-> Um sistema full-stack completo para gestão de cardápio, pedidos e acompanhamento de vendas em tempo real, desenvolvido com foco em boas práticas de arquitetura e experiência do usuário.
-
-## 📌 Sobre o Projeto
-
-O **Sistema de Gestão para Cafeteria** foi desenvolvido para resolver a necessidade de digitalização de pequenos comércios. Ele integra uma API RESTful robusta no backend com uma interface web responsiva e intuitiva no frontend.
-
-O sistema permite que clientes realizem pedidos online, enquanto administradores gerenciam o estoque, acompanham métricas de vendas através de dashboards interativos e controlam o fluxo de produção dos pedidos.
-
-## 🚀 Funcionalidades Principais
-
-### 👤 Área do Cliente
-*   **Cardápio Interativo:** Visualização de produtos com filtragem por categoria (Bebidas, Lanches, Doces).
-*   **Carrinho de Compras:** Adição, remoção e ajuste de quantidades em tempo real.
-*   **Checkout Seguro:** Formulário de dados do cliente e resumo do pedido antes da confirmação.
-
-### 🔐 Área Administrativa
-*   **Dashboard Analítico:** Gráficos dinâmicos (Chart.js) mostrando faturamento diário, ticket médio e produtos mais vendidos.
-*   **Gestão de Pedidos:** Tabela em tempo real para acompanhar status (Pendente, Pronto, Entregue) e atualizar o fluxo de trabalho.
-*   **CRUD de Produtos:** Interface completa para cadastrar, editar e excluir itens do cardápio, controlando preços e estoque.
-
-## 🛠️ Stack Tecnológica
-
-| Categoria | Tecnologia |
-| :--- | :--- |
-| **Backend** | Java 17/21, Spring Boot 3.3.4, Spring Data JPA, Spring Validation |
-| **Banco de Dados** | PostgreSQL (Relacional) |
-| **Frontend** | HTML5, CSS3, JavaScript (ES6+), Chart.js |
-| **Ferramentas** | Maven, Git, GitHub, Eclipse/STS |
-| **Testes** | JUnit 5, Mockito, MockMvc |
+🖼️ Screenshots
 
 
-## ⚙️ Como Executar o Projeto
-
-### Pré-requisitos
-*   [Java JDK 17 ou superior](https://www.oracle.com/java/technologies/downloads/)
-*   [Maven](https://maven.apache.org/install.html)
-*   [PostgreSQL](https://www.postgresql.org/download/) instalado e rodando
-
-### Passo a Passo
-
-1.  **Clone o repositório:**
-    ```bash
-    git clone https://github.com/LucasEspind0la/projeto-cafeteria.git
-    cd projeto-cafeteria
-    ```
-
-2.  **Configuração do Banco de Dados:**
-    Crie um banco de dados no PostgreSQL chamado `cafeteria_db`.
-    Configure as credenciais no arquivo `src/main/resources/application.properties`:
-
-    ```properties
-    spring.datasource.url=jdbc:postgresql://localhost:5432/cafeteria_db
-    spring.datasource.username=seu_usuario_postgres
-    spring.datasource.password=sua_senha_postgres
-    
-    # Hibernate ddl auto (create, create-drop, validate, update)
-    spring.jpa.hibernate.ddl-auto=update
-    spring.jpa.show-sql=true
-    ```
-
-3.  **Executando a Aplicação:**
-    Utilize o Maven wrapper ou o comando direto:
-    ```bash
-    mvn spring-boot:run
-    ```
+🏪 Loja Virtual
+Interface limpa e intuitiva para os clientes navegarem pelo cardápio, filtrar por categorias (Bebidas, Lanches, Doces) e adicionar itens ao carrinho.
 
 
-## 🧪 Testes
+<p align="center">
+  <img src="https://github.com/LucasEspind0la/Cafeteria/blob/main/assets/Captura%20de%20tela%20de%202026-05-05%2021-43-20.png?raw=true" width="90%" alt="Loja Virtual" />
+</p>
 
-O projeto utiliza **JUnit 5** e **Mockito** para garantir a qualidade do código. Os testes focam na camada de Controller, simulando requisições HTTP.
 
-Para executar os testes unitários:
-```bash
-mvn test
+📊 Dashboard Administrativo
+Painel com visão geral do negócio: vendas do dia, total de pedidos, estoque disponível, clientes atendidos e gráficos de análise (vendas por hora e top produtos).
+
+
+<p align="center">
+  <img src="https://github.com/LucasEspind0la/Cafeteria/blob/main/assets/Captura%20de%20tela%20de%202026-05-05%2021-44-27.png?raw=true" width="90%" alt="Dashboard" />
+</p>
+
+
+📝 Gestão de Produtos
+CRUD completo para administrar o cardápio: adicionar, editar e excluir produtos com controle de nome, preço, categoria, tipo (quente/gelado) e quantidade em estoque.
+
+
+<p align="center">
+  <img src="https://github.com/LucasEspind0la/Cafeteria/blob/main/assets/Captura%20de%20tela%20de%202026-05-05%2021-45-26.png?raw=true" width="90%" alt="Gestão de Produtos" />
+</p>
+
+
+👨‍🍳 Painel da Cozinha
+Visão em tempo real dos pedidos com status atualizado (Pendente → Em Preparo → Pronto). Interface otimizada para o fluxo de trabalho da cozinha.
+
+
+<p align="center">
+  <img src="https://github.com/LucasEspind0la/Cafeteria/blob/main/assets/Captura%20de%20tela%20de%202026-05-05%2021-45-32.png?raw=true" width="90%" alt="Painel da Cozinha" />
+</p>
+
+
+🚀 Tecnologias Utilizadas
+<div align="left">
+  <img src="https://img.shields.io/badge/Java-ED8B00?logo=openjdk&logoColor=white&style=for-the-badge" alt="Java"/>
+  <img src="https://img.shields.io/badge/Spring_Boot-6DB33F?logo=springboot&logoColor=white&style=for-the-badge" alt="Spring Boot"/>
+  <img src="https://img.shields.io/badge/PostgreSQL-336791?logo=postgresql&logoColor=white&style=for-the-badge" alt="PostgreSQL"/>
+  <img src="https://img.shields.io/badge/HTML5-E34F26?logo=html5&logoColor=white&style=for-the-badge" alt="HTML5"/>
+  <img src="https://img.shields.io/badge/CSS3-1572B6?logo=css3&logoColor=white&style=for-the-badge" alt="CSS3"/>
+  <img src="https://img.shields.io/badge/JavaScript-F7DF1E?logo=javascript&logoColor=black&style=for-the-badge" alt="JavaScript"/>
+  <img src="https://img.shields.io/badge/Git-F05032?logo=git&logoColor=white&style=for-the-badge" alt="Git"/>
+</div>
+⚙️ Funcionalidades
+Table
+Módulo	Funcionalidades
+Loja	Cardápio com filtros, carrinho de compras, finalização de pedido
+Dashboard	Métricas em tempo real, gráficos de vendas, histórico de pedidos
+Gestão	CRUD de produtos, controle de estoque, categorização
+Cozinha	Fila de pedidos, atualização de status, acompanhamento em tempo real
+Notificações	Alertas de novos pedidos e status atualizados
+📦 Estrutura do Banco de Dados
+
+    Produtos: id, nome, descrição, preço, categoria, tipo, quantidade, imagem
+    Pedidos: id, mesa, cliente, telefone, status, forma de pagamento, total
+    Itens do Pedido: id, pedido_id, produto_id, quantidade, subtotal
+
+🛠️ Como Executar
+bash
+Copy
+
+# Clone o repositório
+git clone https://github.com/LucasEspind0la/Cafeteria.git
+
+# Configure o banco PostgreSQL
+# Execute os scripts SQL em /database
+
+# Inicie a aplicação
+./mvnw spring-boot:run
+
+# Acesse no navegador
+
+📬 Contato
+<p align="center">
+  
+
+  <a href="https://github.com/LucasEspind0la">
+    <img src="https://img.shields.io/badge/GitHub-100000?style=for-the-badge&logo=github&logoColor=white" />
+  </a>
+</p>
+<div align="center">
+  <img src="https://komarev.com/ghpvc/?username=LucasEspind0la&label=Visualiza%C3%A7%C3%B5es&color=FF6B35&style=for-the-badge" alt="contador de visitas" />
+</div>
