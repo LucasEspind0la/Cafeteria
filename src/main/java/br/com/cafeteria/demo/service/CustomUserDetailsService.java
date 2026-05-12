@@ -10,6 +10,8 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 
+import java.util.Collections;
+
 @Service
 public class CustomUserDetailsService implements UserDetailsService {
 
@@ -18,14 +20,20 @@ public class CustomUserDetailsService implements UserDetailsService {
 
     @Override
     public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
+        System.out.println("🔍 Buscando usuário: " + email); // Debug
+
         Usuario usuario = usuarioRepository.findByEmail(email)
-                .orElseThrow(() -> new UsernameNotFoundException(
-                        "Usuário não encontrado: " + email));
+                .orElseThrow(() -> {
+                    System.out.println("❌ Usuário não encontrado: " + email);
+                    return new UsernameNotFoundException("Usuário não encontrado: " + email);
+                });
+
+        System.out.println("✅ Usuário encontrado: " + usuario.getEmail() + " | Role: " + usuario.getRole());
 
         return User.builder()
                 .username(usuario.getEmail())
                 .password(usuario.getSenha())
-                .authorities(new SimpleGrantedAuthority("ROLE_" + usuario.getRole()))
+                .authorities(Collections.singletonList(new SimpleGrantedAuthority(usuario.getRole())))
                 .build();
     }
 }

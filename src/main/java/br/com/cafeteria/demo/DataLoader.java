@@ -19,6 +19,11 @@ public class DataLoader implements CommandLineRunner {
     @Override
     public void run(String... args) throws Exception {
         System.out.println("🚀 DataLoader iniciando...");
+        System.out.println("   Usuários no banco: " + repository.count());
+
+        // FORÇA recriação - remove todos primeiro (SÓ PARA DEBUG!)
+        // repository.deleteAll();
+        // System.out.println("🗑️ Banco limpo para debug");
 
         if (repository.count() == 0) {
             System.out.println("📦 Banco vazio. Criando usuários...");
@@ -31,7 +36,7 @@ public class DataLoader implements CommandLineRunner {
             admin.setRole("ROLE_ADMIN");
             repository.save(admin);
             System.out.println("   ✅ Admin criado: admin@cafe.com");
-            System.out.println("      Hash: " + senhaAdmin.substring(0, 30) + "...");
+            System.out.println("      Hash gerado: " + senhaAdmin);
 
             // USER
             Usuario user = new Usuario();
@@ -41,13 +46,13 @@ public class DataLoader implements CommandLineRunner {
             user.setRole("ROLE_USER");
             repository.save(user);
             System.out.println("   ✅ User criado: user@cafe.com");
+            System.out.println("      Hash gerado: " + senhaUser);
 
             System.out.println("✅ Usuários criados com sucesso!");
         } else {
-            System.out.println("ℹ️ Usuários já existem no banco. Pulando criação.");
-            // Mostra os usuários existentes para debug
+            System.out.println("ℹ️ Usuários já existem. Pulando criação.");
             repository.findAll().forEach(u -> {
-                System.out.println("   👤 " + u.getEmail() + " | " + u.getRole());
+                System.out.println("   👤 " + u.getEmail() + " | " + u.getRole() + " | Senha: " + u.getSenha().substring(0, Math.min(30, u.getSenha().length())) + "...");
             });
         }
     }
