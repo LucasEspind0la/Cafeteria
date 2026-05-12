@@ -2,7 +2,6 @@ package br.com.cafeteria.demo.integration.controller;
 
 import br.com.cafeteria.demo.model.Usuario;
 import br.com.cafeteria.demo.repository.UsuarioRepository;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -15,12 +14,9 @@ import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.HashMap;
-import java.util.Map;
-
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.redirectedUrl;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 
 @SpringBootTest
 @AutoConfigureMockMvc
@@ -30,7 +26,6 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 class AuthControllerIntegrationTest {
 
     @Autowired private MockMvc mockMvc;
-    @Autowired private ObjectMapper objectMapper;
     @Autowired private UsuarioRepository usuarioRepository;
     @Autowired private PasswordEncoder passwordEncoder;
 
@@ -47,29 +42,24 @@ class AuthControllerIntegrationTest {
     }
 
     @Test
-    @DisplayName("POST /api/auth/login - Deve autenticar com sucesso")
+    @DisplayName("POST /login - Deve autenticar e redirecionar para index")
     void deveAutenticarComSucesso() throws Exception {
-        Map<String, String> login = new HashMap<>();
-        login.put("email", "admin@test.com");
-        login.put("senha", "123456");
-
-        mockMvc.perform(post("/api/auth/login")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(login)))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.token").exists());
+        mockMvc.perform(post("/login")
+                        .contentType(MediaType.APPLICATION_FORM_URLENCODED)
+                        .param("username", "admin@test.com")
+                        .param("password", "123456"))
+                .andExpect(status().is3xxRedirection())           // 302 Redirect
+                .andExpect(redirectedUrl("/index.html"));          // Redireciona para index
     }
 
     @Test
-    @DisplayName("POST /api/auth/login - Deve retornar 401 com senha errada")
-    void deveRetornar401ComSenhaErrada() throws Exception {
-        Map<String, String> login = new HashMap<>();
-        login.put("email", "admin@test.com");
-        login.put("senha", "senhaerrada");
-
-        mockMvc.perform(post("/api/auth/login")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(login)))
-                .andExpect(status().isUnauthorized());
+    @DisplayName("POST /login - Deve redirecionar para login com erro")
+    void deveRetornarErroComSenhaErrada() throws Exception {
+        mockMvc.perform(post("/login")
+                        .contentType(MediaType.APPLICATION_FORM_URLENCODED)
+                        .param("username", "admin@test.com")
+                        .param("password", "senhaerrada"))
+                .andExpect(status().is3xxRedirection())           // 302 Redirect
+                .andExpect(redirectedUrl("/login.html?error=true")); // Redireciona com erro
     }
 }
