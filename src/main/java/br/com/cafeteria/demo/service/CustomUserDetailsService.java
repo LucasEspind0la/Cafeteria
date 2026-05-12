@@ -20,20 +20,23 @@ public class CustomUserDetailsService implements UserDetailsService {
 
     @Override
     public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
-        System.out.println("🔍 Buscando usuário: " + email); // Debug
+        System.out.println("🔍 Buscando usuário: " + email);
 
         Usuario usuario = usuarioRepository.findByEmail(email)
-                .orElseThrow(() -> {
-                    System.out.println("❌ Usuário não encontrado: " + email);
-                    return new UsernameNotFoundException("Usuário não encontrado: " + email);
-                });
+                .orElseThrow(() -> new UsernameNotFoundException("Usuário não encontrado: " + email));
 
-        System.out.println("✅ Usuário encontrado: " + usuario.getEmail() + " | Role: " + usuario.getRole());
+        // Garante que a role tenha o prefixo ROLE_
+        String role = usuario.getRole();
+        if (!role.startsWith("ROLE_")) {
+            role = "ROLE_" + role;
+        }
+
+        System.out.println("✅ Usuário encontrado: " + usuario.getEmail() + " | Role: " + role);
 
         return User.builder()
                 .username(usuario.getEmail())
                 .password(usuario.getSenha())
-                .authorities(Collections.singletonList(new SimpleGrantedAuthority(usuario.getRole())))
+                .authorities(Collections.singletonList(new SimpleGrantedAuthority(role)))
                 .build();
     }
 }
