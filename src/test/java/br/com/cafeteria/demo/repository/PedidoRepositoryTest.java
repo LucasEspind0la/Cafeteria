@@ -7,13 +7,13 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
-import org.springframework.boot.test.autoconfigure.orm.jpa.TestEntityManager;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
 
 @DataJpaTest
 @DisplayName("PedidoRepository - Testes de Integração")
@@ -22,66 +22,68 @@ class PedidoRepositoryTest {
     @Autowired
     private PedidoRepository pedidoRepository;
 
-    @Autowired
-    private TestEntityManager entityManager;
-
     @BeforeEach
     void limparDados() {
-        // Limpa TODOS os pedidos e itens relacionados
-        entityManager.getEntityManager()
-                .createNativeQuery("DELETE FROM itens_pedido")
-                .executeUpdate();
-        entityManager.getEntityManager()
-                .createNativeQuery("DELETE FROM pagamentos")
-                .executeUpdate();
-        entityManager.getEntityManager()
-                .createNativeQuery("DELETE FROM notificacoes")
-                .executeUpdate();
-        entityManager.getEntityManager()
-                .createNativeQuery("DELETE FROM pedidos")
-                .executeUpdate();
-        entityManager.flush();
-        entityManager.clear();
+        pedidoRepository.deleteAll();
     }
 
     @Test
-    @DisplayName("Deve buscar pedidos por status corretamente")
-    void deveBuscarPedidosPorStatus() {
-        // DEBUG: Verifica se há pedidos antes de inserir
-        List<Pedido> pedidosAntes = pedidoRepository.findAll();
-        System.out.println("Pedidos antes: " + pedidosAntes.size());
-        for (Pedido p : pedidosAntes) {
-            System.out.println("  - " + p.getClienteNome() + " | " + p.getStatus());
-        }
+    @DisplayName("Deve buscar pedidos por status PENDENTE")
+    void deveBuscarPedidosPendentes() {
+        // Cria 2 pedidos (o @PrePersist seta como PENDENTE automaticamente)
+        Pedido pedido1 = criarPedido("João");
+        pedidoRepository.save(pedido1);
 
-        // Arrange: Cria pedidos com diferentes status
-        Pedido pedidoPendente1 = criarPedido("João", StatusPedido.PENDENTE);
-        Pedido pedidoPendente2 = criarPedido("Ana", StatusPedido.PENDENTE);
-        Pedido pedidoPronto = criarPedido("Maria", StatusPedido.PRONTO);
+        Pedido pedido2 = criarPedido("Ana");
+        pedidoRepository.save(pedido2);
 
-        entityManager.persist(pedidoPendente1);
-        entityManager.persist(pedidoPendente2);
-        entityManager.persist(pedidoPronto);
-        entityManager.flush();
+        // Busca PENDENTES
+        List<Pedido> pendentes = pedidoRepository.findByStatus(StatusPedido.PENDENTE);
 
-        // Act
-        List<Pedido> pedidosPendentes = pedidoRepository.findByStatus(StatusPedido.PENDENTE);
-        List<Pedido> pedidosProntos = pedidoRepository.findByStatus(StatusPedido.PRONTO);
-        List<Pedido> pedidosCancelados = pedidoRepository.findByStatus(StatusPedido.CANCELADO);
-
-        // Assert
-        assertEquals(2, pedidosPendentes.size(), "Deve retornar 2 pedidos PENDENTE");
-        assertEquals(1, pedidosProntos.size(), "Deve retornar 1 pedido PRONTO");
-        assertTrue(pedidosCancelados.isEmpty(), "Deve retornar lista vazia para CANCELADO");
+        // Deve retornar 2
+        assertThat(pendentes).hasSize(2);
     }
 
-    private Pedido criarPedido(String nome, StatusPedido status) {
-        Pedido pedido = new Pedido();
-        pedido.setClienteNome(nome);
-        pedido.setClienteTelefone("11999999999");
-        pedido.setStatus(status);
-        pedido.setTotal(new BigDecimal("10.00"));
-        pedido.setDataCriacao(LocalDateTime.now());
-        return pedido;
+    @Test
+    @DisplayName("Deve buscar pedidos por status PRONTO")
+    void deveBuscarPedidosProntos() {
+        // Cria pedido como PENDENTE (padrão do @PrePersist)
+        Pedido pedido = criarPedido("Maria");
+        pedido = pedidoRepository.save(pedido);
+
+        // Altera para PRONTO e salva novamente
+        pedido.setStatus(StatusPedido.PRONTO);
+        pedidoRepository.save(pedido);
+
+        // Busca PRONTOS
+        List<Pedido> prontos = pedidoRepository.findByStatus(StatusPedido.PRONTO);
+
+        // Deve retornar 1
+        assertThat(prontos).hasSize(1);
+        assertThat(prontos.get(0).getClienteNome()).isEqualTo("Maria");
+    }
+
+    @Test
+    @DisplayName("Deve retornar lista vazia para status sem pedidos")
+    void deveRetornarVazioParaStatusSemPedidos() {
+        // Cria um pedido PENDENTE
+        Pedido pedido = criarPedido("João");
+        pedidoRepository.save(pedido);
+
+        // Busca CANCELADO (nenhum existe)
+        List<Pedido> cancelados = pedidoRepository.findByStatus(StatusPedido.CANCELADO);
+
+        // Deve retornar vazio
+        assertThat(cancelados).isEmpty();
+    }
+
+    private Pedido criarPedido(String nome) {
+        return Pedido.builder()
+                .clienteNome(nome)
+                .clienteTelefone("11999999999")
+                .total(new BigDecimal("10.00"))
+                .itens(new ArrayList<>())
+                .tipoEntrega(Pedido.TipoEntrega.RETIRADA_LOJA)
+                .build();
     }
 }
