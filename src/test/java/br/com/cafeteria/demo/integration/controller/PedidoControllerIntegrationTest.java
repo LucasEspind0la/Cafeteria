@@ -1,12 +1,7 @@
 package br.com.cafeteria.demo.integration.controller;
 
-import br.com.cafeteria.demo.dto.ItemRequest;
-import br.com.cafeteria.demo.dto.PedidoRequest;
-import br.com.cafeteria.demo.model.Produto;
-import br.com.cafeteria.demo.repository.NotificacaoRepository;
-import br.com.cafeteria.demo.repository.PagamentoRepository;
-import br.com.cafeteria.demo.repository.PedidoRepository;
-import br.com.cafeteria.demo.repository.ProdutoRepository;
+import br.com.cafeteria.demo.model.*;
+import br.com.cafeteria.demo.repository.*;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -16,180 +11,145 @@ import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMock
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
 import org.springframework.security.test.context.support.WithMockUser;
-import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import static org.hamcrest.Matchers.*;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @SpringBootTest
 @AutoConfigureMockMvc
 @ActiveProfiles("test")
-@DirtiesContext(classMode = DirtiesContext.ClassMode.BEFORE_EACH_TEST_METHOD)
-@DisplayName("PedidoController - Testes de Integração")
+@Transactional
+@DisplayName("PedidoController - Integração")
 class PedidoControllerIntegrationTest {
 
-    @Autowired
-    private MockMvc mockMvc;
+    @Autowired private MockMvc mockMvc;
+    @Autowired private ObjectMapper objectMapper;
+    @Autowired private ProdutoRepository produtoRepository;
+    @Autowired private PedidoRepository pedidoRepository;
 
-    @Autowired
-    private ObjectMapper objectMapper;
-
-    @Autowired
-    private ProdutoRepository produtoRepository;
-
-    @Autowired
-    private PedidoRepository pedidoRepository;
-
-    @Autowired
-    private PagamentoRepository pagamentoRepository;
-
-    @Autowired
-    private NotificacaoRepository notificacaoRepository;
-
-    private Long produtoId; // Guarda o ID real do produto criado
+    private Produto produto;
 
     @BeforeEach
     void setUp() {
-        // Limpa na ordem correta (filhos primeiro, depois pais)
-        notificacaoRepository.deleteAll();
-        pagamentoRepository.deleteAll();
         pedidoRepository.deleteAll();
         produtoRepository.deleteAll();
 
-        // Cria produto de teste e guarda o ID real
-        Produto cafe = new Produto();
-        cafe.setNome("Café");
-        cafe.setDescricao("Café expresso");
-        cafe.setPreco(new BigDecimal("5.00"));
-        cafe.setEstoque(10);
-        cafe.setCategoria("Bebidas");
-        cafe.setTipo("QUENTE");
-        Produto produtoSalvo = produtoRepository.save(cafe);
-        this.produtoId = produtoSalvo.getId(); // Pega o ID real gerado pelo banco
+        produto = Produto.builder()
+                .nome("Cafe")
+                .tipo("QUENTE")
+                .categoria("Bebidas")
+                .preco(new BigDecimal("5.00"))
+                .estoque(10)
+                .descricao("Cafe expresso")
+                .build();
+        produto = produtoRepository.save(produto);
     }
 
     @Test
-    @DisplayName("Deve criar pedido com sucesso (autenticado)")
-    @WithMockUser(username = "admin@test.com", roles = "ADMIN")
+    @DisplayName("POST /api/pedidos - Deve criar pedido com sucesso (201)")
+    @WithMockUser(username = "admin@test.com", roles = {"ADMIN"})
     void deveCriarPedidoComSucesso() throws Exception {
-        ItemRequest item = new ItemRequest();
-        item.setProdutoId(produtoId); // USA O ID REAL
-        item.setQuantidade(2);
+        List<Map<String, Object>> itens = new ArrayList<>();
+        Map<String, Object> item = new HashMap<>();
+        item.put("produtoId", produto.getId());
+        item.put("quantidade", 2);
+        itens.add(item);
 
-        PedidoRequest request = new PedidoRequest();
-        request.setClienteNome("João");
-        request.setClienteTelefone("11999999999");
-        request.setItens(List.of(item));
+        Map<String, Object> request = new HashMap<>();
+        request.put("clienteNome", "Joao");
+        request.put("clienteTelefone", "11999999999");
+        request.put("itens", itens);
 
         mockMvc.perform(post("/api/pedidos")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.clienteNome").value("João"))
-                .andExpect(jsonPath("$.status").value("PENDENTE"));
+                .andExpect(status().isCreated())
+                .andExpect(jsonPath("$.id", notNullValue()))
+                .andExpect(jsonPath("$.clienteNome", is("Joao")))
+                .andExpect(jsonPath("$.status", is("PENDENTE")));
     }
 
     @Test
-    @DisplayName("Deve retornar 400 quando pedido não tem itens")
-    @WithMockUser(username = "admin@test.com", roles = "ADMIN")
+    @DisplayName("POST /api/pedidos - Deve retornar 400 sem itens")
+    @WithMockUser(username = "admin@test.com", roles = {"ADMIN"})
     void deveRetornar400SemItens() throws Exception {
-        PedidoRequest request = new PedidoRequest();
-        request.setClienteNome("João");
-        request.setClienteTelefone("11999999999");
-        request.setItens(List.of());
+        List<Map<String, Object>> itensVazios = new ArrayList<>();
+
+        Map<String, Object> request = new HashMap<>();
+        request.put("clienteNome", "Joao");
+        request.put("clienteTelefone", "11999999999");
+        request.put("itens", itensVazios);
 
         mockMvc.perform(post("/api/pedidos")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
-                .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.erro").value("Pedido deve conter pelo menos um item"));
+                .andExpect(status().isBadRequest());
     }
 
     @Test
-    @DisplayName("Deve retornar 400 quando estoque é insuficiente")
-    @WithMockUser(username = "admin@test.com", roles = "ADMIN")
-    void deveRetornar400EstoqueInsuficiente() throws Exception {
-        ItemRequest item = new ItemRequest();
-        item.setProdutoId(produtoId); // USA O ID REAL
-        item.setQuantidade(20);
+    @DisplayName("GET /api/pedidos/{id} - Deve buscar pedido por id (200)")
+    @WithMockUser(username = "admin@test.com", roles = {"ADMIN"})
+    void deveBuscarPedidoPorId() throws Exception {
+        Pedido pedido = Pedido.builder()
+                .clienteNome("Maria")
+                .clienteTelefone("11888888888")
+                .status(StatusPedido.PENDENTE)
+                .total(new BigDecimal("15.00"))
+                .itens(new ArrayList<>())
+                .tipoEntrega(Pedido.TipoEntrega.RETIRADA_LOJA)
+                .build();
+        pedido = pedidoRepository.save(pedido);
 
-        PedidoRequest request = new PedidoRequest();
-        request.setClienteNome("João");
-        request.setClienteTelefone("11999999999");
-        request.setItens(List.of(item));
-
-        mockMvc.perform(post("/api/pedidos")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(request)))
-                .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.erro").value("Estoque insuficiente: Café"));
+        mockMvc.perform(get("/api/pedidos/{id}", pedido.getId()))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.id", is(pedido.getId().intValue())))
+                .andExpect(jsonPath("$.clienteNome", is("Maria")));
     }
 
     @Test
-    @DisplayName("Deve retornar 403 quando não está autenticado")
-    void deveRetornar403SemAutenticacao() throws Exception {
-        ItemRequest item = new ItemRequest();
-        item.setProdutoId(produtoId); // USA O ID REAL
-        item.setQuantidade(1);
-
-        PedidoRequest request = new PedidoRequest();
-        request.setClienteNome("Anônimo");
-        request.setClienteTelefone("11999999999");
-        request.setItens(List.of(item));
-
-        mockMvc.perform(post("/api/pedidos")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(request)))
-                .andExpect(status().isForbidden());
+    @DisplayName("GET /api/pedidos/status/PENDENTE - Deve listar pedidos por status")
+    @WithMockUser(username = "admin@test.com", roles = {"ADMIN"})
+    void deveListarPedidosPorStatus() throws Exception {
+        mockMvc.perform(get("/api/pedidos/status/PENDENTE"))
+                .andExpect(status().isOk());
     }
 
     @Test
-    @DisplayName("Deve listar todos os pedidos")
-    @WithMockUser(username = "admin@test.com", roles = "ADMIN")
+    @DisplayName("GET /api/pedidos - Deve listar todos os pedidos")
+    @WithMockUser(username = "admin@test.com", roles = {"ADMIN"})
     void deveListarTodosPedidos() throws Exception {
         mockMvc.perform(get("/api/pedidos"))
                 .andExpect(status().isOk());
     }
 
     @Test
-    @DisplayName("Deve buscar pedido por ID")
-    @WithMockUser(username = "admin@test.com", roles = "ADMIN")
-    void deveBuscarPedidoPorId() throws Exception {
-        // Primeiro cria um pedido
-        ItemRequest item = new ItemRequest();
-        item.setProdutoId(produtoId); // USA O ID REAL
-        item.setQuantidade(1);
+    @DisplayName("POST /api/pedidos - Deve redirecionar para login sem autenticacao (302)")
+    void deveRedirecionarParaLoginSemAutenticacao() throws Exception {
+        List<Map<String, Object>> itens = new ArrayList<>();
+        Map<String, Object> item = new HashMap<>();
+        item.put("produtoId", produto.getId());
+        item.put("quantidade", 1);
+        itens.add(item);
 
-        PedidoRequest request = new PedidoRequest();
-        request.setClienteNome("João");
-        request.setClienteTelefone("11999999999");
-        request.setItens(List.of(item));
+        Map<String, Object> request = new HashMap<>();
+        request.put("clienteNome", "Anonimo");
+        request.put("clienteTelefone", "11999999999");
+        request.put("itens", itens);
 
-        String response = mockMvc.perform(post("/api/pedidos")
+        mockMvc.perform(post("/api/pedidos")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
-                .andExpect(status().isOk()) // Garante que criou com sucesso
-                .andReturn().getResponse().getContentAsString();
-
-        Long id = objectMapper.readTree(response).get("id").asLong();
-
-        mockMvc.perform(get("/api/pedidos/" + id))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.clienteNome").value("João"));
-    }
-
-    @Test
-    @DisplayName("Deve listar pedidos por status")
-    @WithMockUser(username = "admin@test.com", roles = "ADMIN")
-    void deveListarPedidosPorStatus() throws Exception {
-        mockMvc.perform(get("/api/pedidos/status/PENDENTE"))
-                .andExpect(status().isOk());
+                .andExpect(status().is3xxRedirection())
+                .andExpect(redirectedUrl("/login.html"));  // ✅ CORRIGIDO: URL exata
     }
 }

@@ -53,8 +53,6 @@ public class SecurityConfig {
                                 "/api/auth/**",
                                 "/api/produtos",
                                 "/api/produtos/**",
-                                "/api/pedidos",
-                                "/api/pedidos/**",
                                 "/css/**",
                                 "/js/**",
                                 "/style.css",
@@ -63,7 +61,9 @@ public class SecurityConfig {
                                 "/admin.js",
                                 "/"
                         ).permitAll()
-                        .anyRequest().authenticated()
+
+                        .requestMatchers("/api/pedidos/status/**").permitAll() // Se quiser status público
+                        .anyRequest().authenticated()  // Tudo o mais precisa login
                 )
 
                 .formLogin(form -> form
