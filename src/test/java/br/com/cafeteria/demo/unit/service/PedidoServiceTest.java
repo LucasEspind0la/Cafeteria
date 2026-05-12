@@ -2,16 +2,19 @@ package br.com.cafeteria.demo.unit.service;
 
 import br.com.cafeteria.demo.dto.ItemRequest;
 import br.com.cafeteria.demo.dto.PedidoRequest;
+import br.com.cafeteria.demo.exception.ValidacaoException;
 import br.com.cafeteria.demo.model.Pedido;
 import br.com.cafeteria.demo.model.Produto;
 import br.com.cafeteria.demo.model.StatusPedido;
 import br.com.cafeteria.demo.repository.PedidoRepository;
 import br.com.cafeteria.demo.repository.ProdutoRepository;
+import br.com.cafeteria.demo.service.NotificacaoService;
 import br.com.cafeteria.demo.service.PedidoService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -23,6 +26,9 @@ import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyLong;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
@@ -31,6 +37,7 @@ class PedidoServiceTest {
 
     @Mock private PedidoRepository pedidoRepository;
     @Mock private ProdutoRepository produtoRepository;
+    @Mock private NotificacaoService notificacaoService;
 
     @InjectMocks private PedidoService pedidoService;
 
@@ -70,7 +77,13 @@ class PedidoServiceTest {
 
         when(produtoRepository.findById(1L)).thenReturn(Optional.of(cafe));
         when(produtoRepository.findById(2L)).thenReturn(Optional.of(croissant));
-        when(pedidoRepository.save(any())).thenAnswer(i -> i.getArgument(0));
+        when(pedidoRepository.save(any(Pedido.class))).thenAnswer(i -> {
+            Pedido p = i.getArgument(0);
+            p.setId(1L);
+            return p;
+        });
+        when(produtoRepository.save(any(Produto.class))).thenAnswer(i -> i.getArgument(0));
+        doNothing().when(notificacaoService).notificarPedidoRecebido(anyString(), anyLong());
 
         Pedido pedido = pedidoService.criarPedido(request);
 
@@ -80,11 +93,15 @@ class PedidoServiceTest {
         assertEquals(new BigDecimal("16.00"), pedido.getTotal());
         assertEquals(2, pedido.getItens().size());
 
-        assertEquals(8, cafe.getEstoque());
-        assertEquals(4, croissant.getEstoque());
+        ArgumentCaptor<Produto> produtoCaptor = ArgumentCaptor.forClass(Produto.class);
+        verify(produtoRepository, times(2)).save(produtoCaptor.capture());
+
+        List<Produto> produtosSalvos = produtoCaptor.getAllValues();
+        assertEquals(8, produtosSalvos.get(0).getEstoque());
+        assertEquals(4, produtosSalvos.get(1).getEstoque());
 
         verify(pedidoRepository).save(any(Pedido.class));
-        verify(produtoRepository, times(2)).save(any(Produto.class));
+        verify(notificacaoService).notificarPedidoRecebido(eq("João@email.com"), eq(1L));
     }
 
     @Test
@@ -101,11 +118,13 @@ class PedidoServiceTest {
 
         when(produtoRepository.findById(1L)).thenReturn(Optional.of(cafe));
 
-        RuntimeException exception = assertThrows(RuntimeException.class,
+        ValidacaoException exception = assertThrows(ValidacaoException.class,
                 () -> pedidoService.criarPedido(request));
 
         assertEquals("Estoque insuficiente: Café", exception.getMessage());
         verify(pedidoRepository, never()).save(any());
+        verify(produtoRepository, never()).save(any());
+        verify(notificacaoService, never()).notificarPedidoRecebido(anyString(), anyLong());
     }
 
     @Test
@@ -122,7 +141,12 @@ class PedidoServiceTest {
 
         when(produtoRepository.findById(99L)).thenReturn(Optional.empty());
 
-        assertThrows(RuntimeException.class, () -> pedidoService.criarPedido(request));
+        ValidacaoException exception = assertThrows(ValidacaoException.class,
+                () -> pedidoService.criarPedido(request));
+
+        assertEquals("Produto não encontrado: 99", exception.getMessage());
+        verify(pedidoRepository, never()).save(any());
+        verify(notificacaoService, never()).notificarPedidoRecebido(anyString(), anyLong());
     }
 
     @Test
@@ -133,6 +157,12 @@ class PedidoServiceTest {
         request.setClienteTelefone("11888888888");
         request.setItens(List.of());
 
-        assertThrows(RuntimeException.class, () -> pedidoService.criarPedido(request));
+        ValidacaoException exception = assertThrows(ValidacaoException.class,
+                () -> pedidoService.criarPedido(request));
+
+        assertEquals("Pedido deve conter pelo menos um item", exception.getMessage());
+        verify(pedidoRepository, never()).save(any());
+        verify(produtoRepository, never()).findById(anyLong());
+        verify(notificacaoService, never()).notificarPedidoRecebido(anyString(), anyLong());
     }
 }

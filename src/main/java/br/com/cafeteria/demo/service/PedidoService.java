@@ -2,6 +2,7 @@ package br.com.cafeteria.demo.service;
 
 import br.com.cafeteria.demo.dto.ItemRequest;
 import br.com.cafeteria.demo.dto.PedidoRequest;
+import br.com.cafeteria.demo.exception.ValidacaoException;
 import br.com.cafeteria.demo.model.ItemPedido;
 import br.com.cafeteria.demo.model.Pedido;
 import br.com.cafeteria.demo.model.Produto;
@@ -10,6 +11,7 @@ import br.com.cafeteria.demo.repository.PedidoRepository;
 import br.com.cafeteria.demo.repository.ProdutoRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
@@ -24,8 +26,12 @@ public class PedidoService {
     private final ProdutoRepository produtoRepository;
     private final NotificacaoService notificacaoService;
 
-    // Criar novo pedido
+    @Transactional
     public Pedido criarPedido(PedidoRequest request) {
+        if (request.getItens() == null || request.getItens().isEmpty()) {
+            throw new ValidacaoException("Pedido deve conter pelo menos um item");
+        }
+
         Pedido pedido = new Pedido();
         pedido.setClienteNome(request.getClienteNome());
         pedido.setClienteTelefone(request.getClienteTelefone());
@@ -36,7 +42,14 @@ public class PedidoService {
 
         for (ItemRequest itemReq : request.getItens()) {
             Produto produto = produtoRepository.findById(itemReq.getProdutoId())
-                    .orElseThrow(() -> new RuntimeException("Produto não encontrado: " + itemReq.getProdutoId()));
+                    .orElseThrow(() -> new ValidacaoException("Produto não encontrado: " + itemReq.getProdutoId()));
+
+            if (produto.getEstoque() < itemReq.getQuantidade()) {
+                throw new ValidacaoException("Estoque insuficiente: " + produto.getNome());
+            }
+
+            produto.setEstoque(produto.getEstoque() - itemReq.getQuantidade());
+            produtoRepository.save(produto);
 
             ItemPedido item = new ItemPedido();
             item.setProduto(produto);
@@ -52,7 +65,6 @@ public class PedidoService {
 
         Pedido salvo = pedidoRepository.save(pedido);
 
-        // Envia notificação
         notificacaoService.notificarPedidoRecebido(
                 request.getClienteNome() + "@email.com",
                 salvo.getId()
@@ -61,25 +73,22 @@ public class PedidoService {
         return salvo;
     }
 
-    // Listar todos
     public List<Pedido> listarTodos() {
         return pedidoRepository.findAll();
     }
 
-    // Buscar por ID
     public Optional<Pedido> buscarPorId(Long id) {
         return pedidoRepository.findById(id);
     }
 
-    // Listar por status
     public List<Pedido> listarPorStatus(StatusPedido status) {
         return pedidoRepository.findByStatus(status);
     }
 
-    // Atualizar status
+    @Transactional
     public Pedido atualizarStatus(Long id, StatusPedido status) {
         Pedido pedido = pedidoRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Pedido não encontrado: " + id));
+                .orElseThrow(() -> new ValidacaoException("Pedido não encontrado: " + id));
 
         pedido.setStatus(status);
 
